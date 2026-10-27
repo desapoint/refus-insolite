@@ -50,3 +50,83 @@
 .laugh-stage.is-success .laugh-spark{opacity:1;animation:hooray .7s ease-out both}.laugh-stage.is-success .spark-b{animation-delay:.18s}.laugh-stage.is-success .spark-c{animation-delay:.35s}
 @media(max-width:700px){.laugh-stage{gap:15px;padding:12px}.laugh-face{font-size:53px}.laugh-bubbles{gap:5px}.laugh-bubbles span{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.story-card:hover{transform:none}.paper-card:hover .stamp,.laugh-stage,.laugh-face,.laugh-bubbles span,.laugh-spark,.submit-feedback.error,.form-card:has(.laugh-stage.is-sending) #submitButton{animation:none!important}}
+
+
+/* Réactions vivantes : deux choix clairs, touch targets confortables. */
+.detail-action{display:flex;flex-wrap:wrap;align-items:flex-start;gap:16px;padding:26px 34px}
+.reaction-panel{position:relative;flex:1 1 420px;min-width:0;isolation:isolate}
+.reaction-intro h3{font-size:20px;line-height:1.3;margin:6px 0}.reaction-intro p{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 17px}
+.reaction-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.reaction-form{display:block;min-width:0}
+.reaction-button{display:flex;align-items:center;gap:10px;text-align:left;width:100%;min-height:83px;padding:12px 14px;border:2px solid #d8e6e1;border-radius:15px;background:#f3f9f6;color:#284b48;box-shadow:0 4px 0 #cbdcd5;cursor:pointer;font:inherit;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease}
+.reaction-button:hover:not(:disabled){transform:translateY(-3px) rotate(-1deg);box-shadow:0 7px 0 #cbdcd5}
+.reaction-button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #cbdcd5}
+.reaction-button:focus-visible{outline:3px solid #406e8c;outline-offset:3px}
+.reaction-button .reaction-icon{font-size:35px;line-height:1;display:inline-block;transform-origin:center;flex:none}
+.reaction-words{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.reaction-words strong{font-weight:850;font-size:13px;line-height:1.25}
+.reaction-words small{font-size:10px;opacity:.78}
+.reaction-count{border-radius:99px;background:#fff;min-width:28px;text-align:center;padding:5px 8px;font-size:12px;font-weight:900}
+.laugh-button{background:#fff2df;border-color:#f9d8a6;box-shadow:0 4px 0 #efc692;color:#815024}
+.laugh-button:hover:not(:disabled){box-shadow:0 7px 0 #efc692}
+.laugh-button:active:not(:disabled){box-shadow:0 1px 0 #efc692}
+.reaction-button.is-picked{opacity:1;cursor:default;border-color:#84c6ab;background:#e6f7ee;box-shadow:0 2px 0 #bed7ca}
+.laugh-button.is-picked{border-color:#eeba57;background:#ffedbe;box-shadow:0 2px 0 #eed29a}
+.reaction-button.is-picked .reaction-icon{filter:drop-shadow(0 2px 2px #0002)}
+.reaction-button.is-reacting .reaction-icon{animation:reaction-jiggle .42s ease-in-out infinite}
+.reaction-feedback{font-size:12px;font-weight:750;color:#366b54;padding:10px 2px 0}
+.reaction-feedback.error{color:#ab4637}
+.reaction-celebration{position:absolute;pointer-events:none;inset:-60px -15px 0;overflow:visible;z-index:3}
+.reaction-celebration span{position:absolute;left:50%;top:58%;opacity:0;font-weight:950;white-space:nowrap;font-size:25px;filter:drop-shadow(0 2px 2px #0002)}
+.reaction-celebration span:nth-child(2){font-size:21px;color:#df6137}
+.reaction-celebration span:nth-child(3){font-size:34px}
+.reaction-celebration span:nth-child(4){font-size:32px}
+.reaction-celebration.is-celebrating span{animation:reaction-burst 1.1s cubic-bezier(.1,.85,.32,1) both}
+.reaction-celebration.is-celebrating span:nth-child(1){--rx:-135px;--ry:-72px;--rr:-23deg}
+.reaction-celebration.is-celebrating span:nth-child(2){--rx:-48px;--ry:-122px;--rr:-17deg;animation-delay:.07s}
+.reaction-celebration.is-celebrating span:nth-child(3){--rx:65px;--ry:-138px;--rr:24deg;animation-delay:.13s}
+.reaction-celebration.is-celebrating span:nth-child(4){--rx:154px;--ry:-75px;--rr:27deg;animation-delay:.2s}
+.reaction-celebration.is-celebrating span:nth-child(5){--rx:30px;--ry:-62px;--rr:-27deg;animation-delay:.12s}
+.reaction-bounce .laugh-button.is-picked .reaction-icon{animation:reaction-jiggle .45s ease-in-out 2}
+@keyframes reaction-jiggle{0%,100%{transform:rotate(0) scale(1)}25%{transform:rotate(-19deg) scale(1.12)}50%{transform:rotate(14deg) scale(1.18)}75%{transform:rotate(-9deg) scale(1.06)}}
+@keyframes reaction-burst{0%{opacity:0;transform:translate(-50%,-10px) scale(.25) rotate(-35deg)}20%{opacity:1}70%{opacity:1;transform:translate(calc(-50% + var(--rx)),var(--ry)) scale(1.3) rotate(var(--rr))}100%{opacity:0;transform:translate(calc(-50% + var(--rx)),calc(var(--ry) - 22px)) scale(.75) rotate(var(--rr))}}
+.share-button{align-self:end;margin-top:62px;white-space:nowrap}
+
+/* Modération : cartes lisibles et confirmation explicite avant destruction. */
+.admin-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.admin-grid .stat{padding:20px}
+.admin-row.mod-entry{padding:24px 26px;border-radius:16px;box-shadow:0 8px 28px #182c2910}
+.mod-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin:26px 0 20px}
+.mod-toolbar h2{font-size:29px;margin:0 0 5px}
+.mod-toolbar p{font-size:12px;color:var(--muted);margin:0}
+.mod-filter{display:flex;align-items:center;gap:10px}
+.mod-filter label{font-size:12px;font-weight:750}
+.mod-filter .control{min-width:170px}
+.mod-entry-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.mod-entry h3{font-size:18px;line-height:1.35;margin:13px 0}
+.mod-quote{font-family:Georgia,serif;font-size:17px;line-height:1.55;background:#fff6ed;border-left:4px solid var(--accent);padding:14px 18px;border-radius:0 10px 10px 0;margin:0 0 15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.mod-context{line-height:1.7;font-size:13px;max-height:180px;overflow:auto;color:#536267}
+.mod-entry-bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:15px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.mod-entry-bottom .admin-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.mod-entry-bottom .admin-actions form{display:flex;gap:9px;flex-wrap:wrap}
+.btn-danger{background:#fff0ec;color:#a8392b;border:1px solid #edb8af;box-shadow:none}
+.btn-danger:hover{background:#fce0dc}
+.delete-expander{position:relative;flex-shrink:0}
+.delete-expander summary{list-style:none;cursor:pointer}
+.delete-expander summary::-webkit-details-marker{display:none}
+.delete-panel{position:relative;z-index:2;margin-top:9px;max-width:340px;border:1px solid #efc4bc;background:#fff8f6;padding:17px;border-radius:12px;box-shadow:0 12px 28px #472e261c}
+.delete-panel strong{font-size:14px;color:#8d3328}
+.delete-panel p{font-size:12px;line-height:1.65;color:#805a52}
+.delete-panel form{display:block!important}
+.delete-panel .btn{max-width:100%;white-space:normal;text-align:center}
+
+/* Message retour formulaire : pas d'écrasement de texte ou de caractères échappés. */
+.submit-feedback{align-items:center;gap:15px;padding:18px 20px;min-width:0;box-shadow:0 6px 22px #00000008}
+.submit-feedback .feedback-glyph{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;background:#dbf0e3;color:#2b7050;border-radius:14px;font-size:23px}
+.submit-feedback.error .feedback-glyph{background:#ffe0d7;color:#a83f2a}
+.submit-feedback .feedback-copy{min-width:0;flex:1}
+.submit-feedback .feedback-copy strong{display:block;font-size:17px;line-height:1.3;overflow-wrap:anywhere}
+.submit-feedback .feedback-copy p{font-size:13px;line-height:1.6;margin:5px 0 0;overflow-wrap:anywhere;white-space:normal}
+@media(max-width:900px){.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.share-button{margin-top:0}}
+@media(max-width:600px){.reaction-choices{grid-template-columns:1fr}.reaction-button{min-height:74px}.detail-action{padding:22px 18px}.reaction-panel{flex-basis:100%}.admin-row.mod-entry{padding:20px}.mod-filter{flex-wrap:wrap}.mod-entry-bottom{align-items:stretch;flex-direction:column}.mod-toolbar{align-items:flex-start}.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.reaction-button,.reaction-button:hover:not(:disabled),.reaction-button:active:not(:disabled){transform:none;transition:none}.reaction-button.is-reacting .reaction-icon,.reaction-celebration.is-celebrating span,.reaction-bounce .laugh-button.is-picked .reaction-icon{animation:none!important}}
