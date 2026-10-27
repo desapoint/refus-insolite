@@ -20,7 +20,7 @@ function setup(response) {
   const button = {textContent: 'Envoyer cette pépite →', disabled: false};
   const title = {textContent: ''};
   const message = {textContent: ''};
-  const form = {action: '/soumettre', event: null, reportValidity: () => true,
+  const form = {action: {tagName:'INPUT'}, getAttribute(name) {assert.equal(name,'action');return '/soumettre';}, event: null, reportValidity: () => true,
     addEventListener(name, callback) { if (name === 'submit') this.event = callback; },
     reset() { state.resetCount += 1; }};
   const elements = {submitForm: form, submitButton: button, submitFeedback: feedback,
