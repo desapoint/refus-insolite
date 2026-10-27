@@ -13,7 +13,7 @@ function setup(response) {
     classList: { toggle(name, val) { val ? classes.add(name) : classes.delete(name); } },
     focus() {}, scrollIntoView() {}
   };
-  const stage = { offsetWidth: 100, classList: {
+  const stage = { offsetWidth: 100, dataset: {}, classList: {
     add(...names) { names.forEach(x => stageClasses.add(x)); },
     remove(...names) { names.forEach(x => stageClasses.delete(x)); }
   }};
@@ -40,7 +40,7 @@ function setup(response) {
     AbortController: class {constructor() { this.signal = {}; } abort() {}},
     setTimeout: () => 1, clearTimeout: () => undefined, console
   });
-  return {form, button, feedback, title, message, state, stageClasses, classes, fullTitle, fullSubtitle};
+  return {form, button, feedback, title, message, state, stage, stageClasses, classes, fullTitle, fullSubtitle};
 }
 const resp = (ok, message, status = ok ? 201 : 422) => () => ({
   ok: status < 400, headers: {get() {return 'application/json; charset=UTF-8';}},
@@ -58,6 +58,8 @@ const send = ctx => ctx.form.event({preventDefault() {}});
   assert.equal(success.feedback.hidden, true, 'aucune bannière de succès sous le formulaire');
   assert.equal(success.title.textContent, '', 'le succès se confirme uniquement en plein écran');
   assert(success.stageClasses.has('is-success'),'animation plein écran au succès');
+  assert(['belly','chair','jaw','printer'].includes(success.stage.dataset.variant),'variante animée définie');
+  assert.equal(success.stage.dataset.stamp,'no','aucun tampon pour les soumissions');
   assert.match(success.fullTitle.textContent,/DANS LA BOÎTE/);
   assert.equal(success.button.disabled, false);
   const validation = setup(resp(false, 'Titre trop court.'));
