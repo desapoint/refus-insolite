@@ -21,7 +21,7 @@ function setup(fetchImpl) {
     const button = {disabled:false,classList:classes()};
     const count = {textContent:'0'};
     const form = {
-      action:'/refus/123',dataset:{kind},button,count,callback:null,
+      action:{tagName:'INPUT'},getAttribute(name) {assert.equal(name,'action');return '/refus/123';},dataset:{kind},button,count,callback:null,
       querySelector(selector) {
         return selector === 'button[type="submit"]' ? button
           : selector === '[data-count]' ? count : null;
