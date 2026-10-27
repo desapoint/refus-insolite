@@ -1,0 +1,21 @@
+# HestiaCP : depot copie directement dans public_html
+# Necessite Apache 2.4 avec mod_rewrite, AllowOverride All
+# En Nginx seul, .htaccess n'est pas applique !
+Options -Indexes -MultiViews
+DirectoryIndex index.php
+
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^\.well-known/acme-challenge/[A-Za-z0-9_-]+$ - [END]
+    RewriteRule ^(?:\.|config(?:/|$)|src(?:/|$)|migrations(?:/|$)|tests(?:/|$)|public(?:/|$)|vendor(?:/|$)|node_modules(?:/|$)|private(?:/|$)) - [F,END,NC]
+    RewriteRule ^assets/(site\.(?:css|js))$ public/assets/$1 [END]
+    RewriteRule ^$ index.php [END]
+    RewriteRule ^(explorer|soumettre|merci|moderation)/?$ index.php?p=$1 [QSA,END]
+    RewriteRule ^refus/([1-9][0-9]*)/?$ index.php?p=refus&id=$1 [QSA,END]
+    RewriteRule ^index\.php$ - [END]
+    RewriteRule ^ - [R=404,END]
+</IfModule>
