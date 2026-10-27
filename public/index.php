@@ -213,7 +213,7 @@ function story_card(array $s): void {
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f8f7f2"><meta name="description" content="Refus Insolites : partagez et découvrez anonymement les refus de candidature les plus étonnants.">
   <title><?= e($displayName) ?> — Refus Insolites</title>
-  <link rel="stylesheet" href="/assets/site.css"><script src="/assets/site.js" defer></script>
+  <link rel="stylesheet" href="/assets/site.css?v=<?= (int)filemtime(__DIR__ . '/assets/site.css') ?>"><script src="/assets/site.js?v=<?= (int)filemtime(__DIR__ . '/assets/site.js') ?>" defer></script>
 </head>
 <body>
 <div class="utility"><i></i> TÉMOIGNAGES ANONYMISÉS · MODÉRATION AVANT PUBLICATION</div>
