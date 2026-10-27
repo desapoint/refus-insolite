@@ -73,7 +73,8 @@ async function submit(form) {await form.callback({preventDefault(){}});}
   assert.equal(ui.forms[1].count.textContent,1);
   assert(ui.celebration.classList.state.has('is-laugh'),'animation rire');
   assert(ui.celebration.classList.state.has('is-celebrating'),'explosion comique');
-  assert.match(ui.feedback.textContent,/Fou rire/);
+  assert.equal(ui.feedback.hidden, true, 'pas de confirmation qui déplace les boutons');
+  assert.equal(ui.feedback.textContent, '', 'la réaction est confirmée par animation et compteur');
   assert.equal(ui.fullStage.dataset.kind,'laugh','scène rire après clic');
   assert.match(ui.fullTitle.textContent,/AHAHA/);
 
