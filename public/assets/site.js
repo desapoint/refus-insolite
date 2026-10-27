@@ -70,7 +70,10 @@ if (copy) copy.addEventListener('click', async () => {
          signal: controller.signal
        });
        if (!(response.headers.get('content-type') || '').toLowerCase().includes('application/json')) {
-         throw new Error('Réponse inattendue');
+         laughStage.classList.remove('is-sending', 'is-success');
+         setFeedback(false, 'La boîte à refus fait des siennes',
+           'Le site n’a pas confirmé l’envoi (code ' + response.status + '). Votre texte est conservé. Réessayez plus tard ou signalez le problème.');
+         return;
        }
        const result = await response.json();
        if (!response.ok || result.ok !== true) {
@@ -100,3 +103,66 @@ if (copy) copy.addEventListener('click', async () => {
      }
    });
  }
+
+
+// Réactions sans rechargement, distinctes et amusantes.
+if (typeof document.querySelectorAll === 'function') {
+  document.querySelectorAll('.reaction-form').forEach((form) => {
+    const button = form.querySelector('button[type="submit"]');
+    const count = form.querySelector('[data-count]');
+    const feedback = document.getElementById('reactionFeedback');
+    const celebration = document.getElementById('reactionCelebration');
+    const panel = document.getElementById('reactionPanel');
+    if (!button || !count || !feedback || !celebration || !panel) return;
+    let sending = false;
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (sending || button.disabled) return;
+      sending = true;
+      button.disabled = true;
+      button.classList.add('is-reacting');
+      feedback.hidden = true;
+      const kind = form.dataset.kind;
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const type = (response.headers.get('content-type') || '').toLowerCase();
+        if (!type.includes('application/json')) throw new Error('Le serveur n’a pas confirmé la réaction (' + response.status + ').');
+        const result = await response.json();
+        if (!response.ok || result.ok !== true) throw new Error(result.message || 'Réaction non enregistrée.');
+        document.querySelectorAll('.reaction-form').forEach((other) => {
+          const value = other.querySelector('[data-count]');
+          if (!value) return;
+          value.textContent = other.dataset.kind === 'laugh' ? result.laughs_count : result.likes_count;
+        });
+        button.classList.add('is-picked');
+        if (result.added) {
+          celebration.classList.remove('is-celebrating', 'is-laugh');
+          void celebration.offsetWidth;
+          celebration.classList.toggle('is-laugh', kind === 'laugh');
+          celebration.classList.add('is-celebrating');
+          panel.classList.remove('reaction-bounce');
+          void panel.offsetWidth;
+          panel.classList.add('reaction-bounce');
+        }
+        feedback.textContent = result.added
+          ? (kind === 'laugh' ? '😂 Fou rire validé ! Le jury est par terre.' : '🙋 Bienvenue au club des refus lunaires !')
+          : 'Vous aviez déjà réagi à ce témoignage.';
+        feedback.classList.remove('error');
+        feedback.hidden = false;
+      } catch (error) {
+        feedback.textContent = (error && error.message) || 'Impossible d’enregistrer la réaction. Réessayez.';
+        feedback.classList.add('error');
+        feedback.hidden = false;
+        button.disabled = false;
+      } finally {
+        sending = false;
+        button.classList.remove('is-reacting');
+      }
+    });
+  });
+}
