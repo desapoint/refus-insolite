@@ -17,6 +17,9 @@ function setup(fetchImpl) {
   const feedback = {textContent:'',hidden:true,classList:classes()};
   const celebration = {offsetWidth:1,classList:classes()};
   const panel = {offsetWidth:1,classList:classes()};
+  const fullStage = {offsetWidth:1,dataset:{},classList:classes()};
+  const fullTitle = {textContent:''};
+  const fullSubtitle = {textContent:''};
   const forms = ['relate','laugh'].map(kind => {
     const button = {disabled:false,classList:classes()};
     const count = {textContent:'0'};
@@ -31,7 +34,10 @@ function setup(fetchImpl) {
     return form;
   });
   const doc = {
-    getElementById(id) {return ({reactionFeedback:feedback,reactionCelebration:celebration,reactionPanel:panel})[id] || null;},
+    getElementById(id) {return ({
+      reactionFeedback:feedback,reactionCelebration:celebration,reactionPanel:panel,
+      laughStage:fullStage,laughCaption:fullTitle,laughSubcaption:fullSubtitle
+    })[id] || null;},
     querySelectorAll(selector) {return selector === '.reaction-form' ? forms : [];}
   };
   let calls=0;
@@ -39,9 +45,10 @@ function setup(fetchImpl) {
     document:doc,
     FormData:class {constructor(form){assert(forms.includes(form));}},
     fetch: async (...args)=>{calls++;return fetchImpl(...args);},
+    setTimeout: () => 1, clearTimeout: () => undefined,
     console
   });
-  return {forms,feedback,celebration,panel,get calls(){return calls;}};
+  return {forms,feedback,celebration,panel,fullStage,fullTitle,fullSubtitle,get calls(){return calls;}};
 }
 const response = obj => ({ok:true,headers:{get:()=> 'application/json'},json:async()=>obj});
 async function submit(form) {await form.callback({preventDefault(){}});}
@@ -55,6 +62,9 @@ async function submit(form) {await form.callback({preventDefault(){}});}
   await submit(ui.forms[0]);
   assert.equal(ui.forms[0].button.disabled,true);
   assert.equal(ui.forms[0].count.textContent,1);
+  assert(ui.fullStage.classList.state.has('is-success'),'scène plein écran après première réaction');
+  assert.equal(ui.fullStage.dataset.kind,'relate');
+  assert.match(ui.fullTitle.textContent,/PAS TOI AUSSI/);
   assert.equal(ui.forms[1].count.textContent,0);
   await submit(ui.forms[0]);
   assert.equal(ui.calls,1,'pas de double vote en cliquant une deuxième fois');
@@ -64,11 +74,14 @@ async function submit(form) {await form.callback({preventDefault(){}});}
   assert(ui.celebration.classList.state.has('is-laugh'),'animation rire');
   assert(ui.celebration.classList.state.has('is-celebrating'),'explosion comique');
   assert.match(ui.feedback.textContent,/Fou rire/);
+  assert.equal(ui.fullStage.dataset.kind,'laugh','scène rire après clic');
+  assert.match(ui.fullTitle.textContent,/AHAHA/);
 
   const failed = setup(async()=>{throw new Error('Connexion momentanément indisponible');});
   await submit(failed.forms[1]);
   assert.equal(failed.forms[1].button.disabled,false,'en cas d’erreur, le bouton redevient cliquable');
   assert.equal(failed.feedback.hidden,false);
   assert(failed.feedback.classList.state.has('error'));
+  assert(!failed.fullStage.classList.state.has('is-success'),'aucune célébration si le réseau échoue');
   console.log('Tests AJAX UI réactions : OK');
 })().catch(e=>{console.error(e);process.exitCode=1;});
