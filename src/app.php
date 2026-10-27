@@ -46,8 +46,53 @@ function submit_reply(int $status, bool $ok, string $message): never {
     echo json_encode(['ok' => $ok, 'message' => $message], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     exit;
 }
+function reaction_async_requested(): bool {
+    return ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+        && ($_POST['action'] ?? null) === 'react'
+        && str_contains(strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? '')), 'application/json');
+}
+function reaction_reply(int $status, array $payload): never {
+    http_response_code($status);
+    header('Content-Type: application/json; charset=UTF-8');
+    header('X-Content-Type-Options: nosniff');
+    header('Cache-Control: no-store');
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    exit;
+}
+function record_reaction(PDO $db, int $storyId, string $visitorHash, string $kind): array {
+    if (!in_array($kind, ['relate', 'laugh'], true)) throw new DomainException('Réaction invalide.');
+    $table = $kind === 'laugh' ? 'laugh_reactions' : 'reactions';
+    $column = $kind === 'laugh' ? 'laughs_count' : 'likes_count';
+    $db->beginTransaction();
+    try {
+        // Verrouille le témoignage pour tenir les compteurs cohérents lors de clics simultanés.
+        $find = $db->prepare("SELECT id FROM refus WHERE id = ? AND status = 'approved' FOR UPDATE");
+        $find->execute([$storyId]);
+        if ($find->fetchColumn() === false) throw new DomainException('Ce témoignage n’est plus disponible.');
+        $insert = $db->prepare("INSERT IGNORE INTO {$table} (refus_id, visitor_hash) VALUES (?, ?)");
+        $insert->execute([$storyId, $visitorHash]);
+        $added = $insert->rowCount() > 0;
+        if ($added) {
+            $increment = $db->prepare("UPDATE refus SET {$column} = {$column} + 1 WHERE id = ?");
+            $increment->execute([$storyId]);
+        }
+        $counts = $db->prepare('SELECT likes_count, laughs_count FROM refus WHERE id = ?');
+        $counts->execute([$storyId]);
+        $row = $counts->fetch();
+        $db->commit();
+        return [
+            'ok' => true, 'added' => $added, 'kind' => $kind,
+            'likes_count' => (int) $row['likes_count'], 'laughs_count' => (int) $row['laughs_count'],
+            'message' => $added ? 'Réaction enregistrée !' : 'Votre réaction avait déjà été enregistrée.',
+        ];
+    } catch (Throwable $exception) {
+        if ($db->inTransaction()) $db->rollBack();
+        throw $exception;
+    }
+}
 function fail_public(int $code, string $message): never {
     if (submit_async_requested()) submit_reply($code, false, $message);
+    if (reaction_async_requested()) reaction_reply($code, ['ok' => false, 'message' => $message]);
     http_response_code($code);
     header('Content-Type: text/html; charset=UTF-8');
     echo '<!doctype html><html lang="fr"><meta charset="utf-8"><title>Refus Insolites</title><body style="font:16px system-ui;max-width:640px;margin:12vh auto;padding:20px"><h1>Refus Insolites</h1><p>' . e($message) . '</p></body></html>';
