@@ -340,6 +340,8 @@ function story_card(array $s): void {
     <div class="laugh-comic-words" aria-hidden="true">
       <span class="laugh-word">HA !</span><span class="laugh-word">HA HA !</span><span class="laugh-word">AHAHA !</span>
     </div>
+    <div class="laugh-act">
+      <div class="comic-chair" aria-hidden="true"><span class="comic-chair-back"></span><span class="comic-chair-seat"></span><span class="comic-chair-leg left"></span><span class="comic-chair-leg right"></span></div>
     <svg class="laugh-character" viewBox="0 0 320 340" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
       <ellipse class="laugh-ground-shadow" cx="161" cy="319" rx="97" ry="12" fill="#131d32" opacity=".18"/>
       <g class="laugh-figure">
@@ -376,8 +378,21 @@ function story_card(array $s): void {
       <path class="laugh-shine" d="M36 77 l12 -25 l10 28 l25 9 l-25 10 l-10 27 l-12 -27 l-25 -10Z" fill="#ffe89d"/>
       <path class="laugh-shine laugh-shine-second" d="M280 192 l8 -19 l7 20 l19 7 l-19 8 l-7 19 l-8 -19 l-19 -8Z" fill="#ffe89d"/>
     </svg>
+      <div class="comic-printer" aria-hidden="true">
+        <div class="comic-paper paper-one"><span>REFUSÉ</span></div>
+        <div class="comic-paper paper-two"><span>TROP MOTIVÉ</span></div>
+        <div class="comic-paper paper-three"><span>NON MERCI</span></div>
+        <div class="comic-printer-case"><div class="printer-control"><i></i><i></i><i></i></div><div class="printer-slot"></div><strong>IMPRIMANTE À REFUS</strong></div>
+        <div class="comic-printer-tray"></div>
+      </div>
+      <div class="comic-impact-text" aria-hidden="true">BOUM !</div>
+    </div>
     <div class="laugh-caption" id="laughCaption">ON N'EST PAS PRÊTS !</div>
     <div class="laugh-subcaption" id="laughSubcaption">Le comité des sourcils levés a perdu son sérieux.</div>
+  </div>
+  <div class="comic-stamp" id="comicStamp" aria-hidden="true">
+    <div class="comic-stamp-ink"><span class="comic-stamp-caption" id="comicStampCaption">ABSURDITÉ CERTIFIÉE</span><span class="comic-stamp-stars">★ &nbsp; ★ &nbsp; ★</span></div>
+    <span class="stamp-ink-splash"></span>
   </div>
   <div class="laugh-confetti" aria-hidden="true">
     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
