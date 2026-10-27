@@ -1,0 +1,14 @@
+/config/config.php
+/config/*.local.php
+/.env
+/.env.*
+!/config/config.example.php
+/vendor/
+/node_modules/
+/.idea/
+/.vscode/
+*.log
+*.sql.gz
+*.sql.zip
+.DS_Store
+
