@@ -247,3 +247,7 @@
   .laugh-subcaption{font-size:12px;padding:8px 10px}
 }
 /* Cette animation ne possède pas d'interrupteur et reste animée après un clic. */
+
+/* Petit rire du bouton pendant l'envoi ; le grand fou rire n'arrive qu'après confirmation. */
+#submitButton.is-laugh-pending{animation:full-submit-giggle .42s ease-in-out infinite;box-shadow:0 0 0 5px rgba(250,112,72,.12)}
+@keyframes full-submit-giggle{0%,100%{transform:rotate(0) translateY(0)}30%{transform:rotate(-1.4deg) translateY(-2px)}65%{transform:rotate(1.4deg) translateY(1px)}}
