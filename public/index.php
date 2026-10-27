@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     redirect_to('merci');
                 }
                 $data = validated_story($_POST);
-                if (!allow_action($db, $config, 'submit', 3, 60)) {
+                if (!admin_logged() && !allow_action($db, $config, 'submit', 3, 60)) {
                     if (submit_async_requested()) submit_reply(429, false, 'Notre boîte à refus est pleine pour le moment. Réessayez dans une heure.');
                     throw new DomainException('Trop de soumissions. Réessayez dans une heure.');
                 }
