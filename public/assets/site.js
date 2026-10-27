@@ -62,7 +62,7 @@ if (copy) copy.addEventListener('click', async () => {
      const timeout = setTimeout(() => controller.abort(), 20000);
 
      try {
-       const response = await fetch(submitForm.action, {
+       const response = await fetch(submitForm.getAttribute('action'), {
          method: 'POST',
          body: new FormData(submitForm),
          credentials: 'same-origin',
@@ -124,7 +124,7 @@ if (typeof document.querySelectorAll === 'function') {
       feedback.hidden = true;
       const kind = form.dataset.kind;
       try {
-        const response = await fetch(form.action, {
+        const response = await fetch(form.getAttribute('action'), {
           method: 'POST',
           body: new FormData(form),
           credentials: 'same-origin',
