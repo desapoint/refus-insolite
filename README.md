@@ -2,70 +2,72 @@
 
 Petit site francophone en **PHP 8.3**, **PDO** et **MariaDB**, basé sur la maquette validée. Aucun framework ni dépendance Composer. Soumission anonyme, consultation avec filtres, réactions, signalement, modération protégée et migrations automatiques.
 
-## Installation
+## Installation HestiaCP avec votre script de déploiement actuel
 
-Pré-requis : PHP **8.3+**, extensions **pdo_mysql** et **mbstring**, MariaDB 10.6+, serveur web Apache ou nginx et HTTPS en production.
+**Aucun changement de script ou de DocumentRoot n'est nécessaire.** Votre mécanisme copie déjà `web/private/<sous-domaine>/` dans le `public_html` du domaine correspondant : le dépôt entier est directement compatible. `index.php` à la racine devient le point d’entrée ; ne déplacez pas le contenu de `public/`.
 
-1. Créer une base de données et un utilisateur dédié dans MariaDB (adapter les noms et le mot de passe) :
+Pré-requis : **PHP 8.3**, extensions `pdo_mysql` et `mbstring`, **MariaDB 10.6+**, HTTPS et **Apache 2.4 avec mod_rewrite et AllowOverride All** (éventuellement Nginx comme proxy devant Apache). Le **mode Nginx seul** n'est pas pris en charge car il ignore les règles `.htaccess`.
 
-   ```sql
-   CREATE DATABASE refus_insolite CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   CREATE USER 'refus_site'@'localhost' IDENTIFIED BY 'REMPLACER_PAR_UN_MOT_DE_PASSE_FORT';
-   GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
-     ON refus_insolite.* TO 'refus_site'@'localhost';
-   ```
+### Dossiers et secrets
 
-   Remarque : si PHP se connecte à `127.0.0.1`, adapter l'utilisateur MariaDB à `'refus_site'@'127.0.0.1'` ou utiliser `host => 'localhost'` dans la configuration. MariaDB distingue ces comptes.
+Exemple pour `refus.desapoint.ca`, avec un clone dans `web/private/refus/` :
 
-2. Copier **sans renommer l'exemple versionné** :
+```text
+/home/USER/web/private/
+  deploy.sh                         # Votre script existant, inchangé
+  refus/                            # Clone Git contenant index.php et .htaccess
 
-   ```sh
-   cp config/config.example.php config/config.php
-   ```
+/home/USER/web/refus.desapoint.ca/
+  private/
+    refus-insolite.php              # Configuration réelle ; PAS dans le dépôt
+  public_html/
+    .htaccess                       # Copie depuis le clone
+    index.php                       # Copie depuis le clone
+    config/config.example.php      # Exemple sans identifiants réels
+    src/ migrations/ public/ tests/
+```
 
-   Modifier **uniquement** `config/config.php` (ignoré par Git) : host, nom de la base, utilisateur et mot de passe. Mettre une clé aléatoire de 64 caractères hexadécimaux :
+Il est essentiel que le déploiement copie **aussi les fichiers cachés** (en particulier `.htaccess` ; `rsync -a` les conserve). Un script qui exclut les dotfiles ne peut pas sécuriser ce déploiement via Apache.
 
-   ```sh
-   php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
-   ```
+Créer d'abord dans HestiaCP une base MariaDB et un utilisateur dédié. Alternative SQL pour l'administrateur MariaDB (adapter les noms, potentiellement préfixés par HestiaCP) :
 
-   Pour l'accès à la modération, créer une empreinte de mot de passe (PHP lit le mot de passe sur l'entrée standard, sans le mettre dans la ligne de commande) :
+```sql
+CREATE DATABASE refus_insolite CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'refus_site'@'localhost' IDENTIFIED BY 'REMPLACER_PAR_UN_MOT_DE_PASSE_FORT';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES
+  ON refus_insolite.* TO 'refus_site'@'localhost';
+```
 
-   ```sh
-   php -r 'echo password_hash(trim(fgets(STDIN)), PASSWORD_DEFAULT), PHP_EOL;'
-   ```
+Le compte MariaDB peut différer selon que PHP se connecte par `localhost` ou `127.0.0.1`. Utiliser les coordonnées réellement créées.
 
-   Coller l'empreinte dans `app.admin_password_hash`. Le mot de passe en clair ne doit être ni versionné ni mis en exemple. L'espace de modération est fermé tant qu'aucune empreinte valide n'est configurée.
+Ensuite, copier **une seule fois** le modèle de configuration vers le dossier `private/` du **domaine déployé** (et non `web/private/` où se trouvent les dépôts). Exemple :
 
-3. **Très important** : configurer la racine web (*DocumentRoot* / `root`) vers `votre-chemin/refus-insolite/public`, et **jamais** vers la racine du dépôt. Config et migrations doivent rester hors du répertoire public.
+```sh
+cp /home/USER/web/private/refus/config/config.example.php \
+   /home/USER/web/refus.desapoint.ca/private/refus-insolite.php
+chmod 600 /home/USER/web/refus.desapoint.ca/private/refus-insolite.php
+```
 
-   Exemple Apache :
+Dans ce fichier privé, renseigner les identifiants MariaDB, la clé `app.secret_key` et l'empreinte `app.admin_password_hash` pour la modération. Générer les deux valeurs avec :
 
-   ```apache
-   DocumentRoot /var/www/refus-insolite/public
-   <Directory /var/www/refus-insolite/public>
-       Require all granted
-       AllowOverride None
-       Options -Indexes
-   </Directory>
-   ```
+```sh
+php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
+php -r 'echo password_hash(trim(fgets(STDIN)), PASSWORD_DEFAULT), PHP_EOL;'
+```
 
-   Exemple nginx :
+Depuis `public_html/src/app.php`, l'application résout automatiquement `dirname(__DIR__, 2) . '/private/refus-insolite.php'`, soit `/home/USER/web/DOMAINE/private/refus-insolite.php` : c'est l'emplacement privé prévu par HestiaCP et accessible depuis son PHP-FPM habituel.
 
-   ```nginx
-   root /var/www/refus-insolite/public;
-   index index.php;
-   location / { try_files $uri $uri/ /index.php?$query_string; }
-   location ~ \.php$ {
-       include fastcgi_params;
-       fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-       fastcgi_pass unix:/run/php/php8.3-fpm.sock;
-   }
-   ```
+**Ne créez pas de vrai `config/config.php` dans le dépôt.** Votre script ne synchronisant que le contenu vers `public_html`, il ne touche pas au fichier `private/refus-insolite.php` du domaine.
 
-   Ces extraits ne remplacent pas une configuration HTTPS/TLS complète. N'exposez jamais un autre répertoire du projet avec un alias web.
+Exécuter votre script de déploiement normalement. **Les migrations s'appliquent automatiquement** lors de la première requête et lorsqu'une nouvelle version apparaît ; aucune modification au script n'est requise. La base MariaDB doit déjà exister et l'utilisateur doit avoir les droits DDL ci-dessus.
 
-4. Ouvrir le site. **Les migrations s'exécutent automatiquement**, sans action manuelle, lors de la première requête et au besoin après une mise à jour. Le compte MariaDB doit disposer des droits DDL indiqués ci-dessus. La base elle-même doit être créée une fois avant le premier chargement.
+Vérification HTTP **après** le déploiement :
+
+```sh
+bash tests/check-deployment.sh https://refus.desapoint.ca
+```
+
+Les pages et CSS/JS doivent répondre **200**, les sources et migrations **403 ou 404**. Si la vérification échoue, ne mettez pas le site en service. Un HTTP **503** peut indiquer un problème de configuration ou de connexion PDO. Les règles `.htaccess` ne protègent pas des fichiers statiques que Nginx sert directement ; le mode Nginx seul nécessite une configuration serveur supplémentaire.
 
 ## Pages
 
@@ -83,7 +85,7 @@ Les fichiers `migrations/NNN_nom.php` sont chargés dans l'ordre. Chaque fichier
 
 ## Sécurité et exploitation
 
-- Aucun secret dans Git : `config/config.php` et fichiers `.env` sont ignorés ; vérifier `git status` avant un push. Attention : `.gitignore` ne supprime pas un secret déjà commité.
+- Aucun secret dans Git : le fichier réel est `private/refus-insolite.php` à côté du `public_html` du domaine. Il n'est ni cloné ni publié. `.gitignore` ne supprime pas un secret déjà commité.
 - Requêtes préparées PDO sans émulation, encodage `utf8mb4`, échappement HTML, listes blanches de filtres et actions, validation serveur et protection CSRF.
 - Connexion administrateur par mot de passe haché, renouvellement de session, expiration après 2 heures d'inactivité, limitation des tentatives par adresse IP **hachée** ; pas de compte public.
 - Soumissions, réactions et signalements limités par adresse IP hachée avec HMAC. Le site ne conserve ni adresse e-mail des auteurs ni adresse IP en clair dans la base.
