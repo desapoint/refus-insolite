@@ -14,7 +14,19 @@ const SECTORS = [
 
 function e(mixed $value): string { return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 function link_to(string $page = 'home', array $params = []): string {
-    return 'index.php?' . http_build_query(['p' => $page] + $params, '', '&', PHP_QUERY_RFC3986);
+    // URL absolues pour les liens et formulaires sous /refus/123.
+    $path = match ($page) {
+        'home' => '/',
+        'explorer' => '/explorer',
+        'soumettre' => '/soumettre',
+        'merci' => '/merci',
+        'moderation' => '/moderation',
+        'refus' => isset($params['id']) && filter_var($params['id'], FILTER_VALIDATE_INT, ['options'=>['min_range'=>1]])
+            ? '/refus/' . (int)$params['id'] : '/explorer',
+        default => '/',
+    };
+    unset($params['id']);
+    return $path . ($params === [] ? '' : '?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986));
 }
 function redirect_to(string $page, array $params = []): never {
     header('Location: ' . link_to($page, $params), true, 303);
@@ -44,7 +56,8 @@ function verify_csrf(): void {
     if (!is_string($token) || !hash_equals((string) ($_SESSION['csrf'] ?? ''), $token)) fail_public(403, 'Session expirée. Actualisez la page et réessayez.');
 }
 function config_load(): array {
-    $path = dirname(__DIR__) . '/config/config.php';
+    // Configuration dans le private/ du domaine HestiaCP, hors public_html.
+    $path = dirname(__DIR__, 2) . '/private/refus-insolite.php';
     if (!is_file($path)) fail_public(503, 'Configuration non terminée. Consultez le fichier README du projet.');
     $config = require $path;
     if (!is_array($config)) fail_public(503, 'Configuration invalide.');
