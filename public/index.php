@@ -9,7 +9,7 @@ header('Content-Type: text/html; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('X-Frame-Options: DENY');
-header("Content-Security-Policy: default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'none'");
+header("Content-Security-Policy: default-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'");
 header('Cache-Control: private, no-store');
 if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') header('Strict-Transport-Security: max-age=31536000');
 if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 24000) fail_public(413, 'Le formulaire est trop volumineux.');
@@ -62,6 +62,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 unset($_SESSION['admin_authenticated'], $_SESSION['admin_last']);
                 session_regenerate_id(true);
                 redirect_to('home');
+            case 'delete_story':
+                if (!admin_logged()) fail_public(403, 'Connexion requise.');
+                if (($_POST['confirmation'] ?? '') !== 'SUPPRIMER') fail_public(400, 'Veuillez confirmer la suppression.');
+                $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>1]]);
+                if (!$id) fail_public(400, 'Témoignage invalide.');
+                // Les réactions et signalements associés sont effacés par les clés étrangères.
+                $delete = $db->prepare('DELETE FROM refus WHERE id = ?');
+                $delete->execute([$id]);
+                flash($delete->rowCount() ? 'Témoignage définitivement supprimé.' : 'Témoignage déjà supprimé.', $delete->rowCount() > 0);
+                redirect_to('moderation');
             case 'moderate':
                 if (!admin_logged()) fail_public(403, 'Vous devez vous connecter pour accéder à la modération.');
                 $decision = $_POST['decision'] ?? '';
@@ -94,24 +104,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'react':
                 $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>1]]);
                 if (!$id) fail_public(400, 'Témoignage invalide.');
+                $kind = $_POST['kind'] ?? 'relate';
+                if (!is_string($kind) || !in_array($kind, ['relate', 'laugh'], true)) fail_public(400, 'Réaction invalide.');
                 $cookie = $_COOKIE['ri_visitor'] ?? '';
-                if (!is_string($cookie) || !preg_match('/\A[a-f0-9]{64}\z/D', $cookie)) {
+                if (!is_string($cookie) || !preg_match('/\\A[a-f0-9]{64}\\z/D', $cookie)) {
                     $cookie = bin2hex(random_bytes(32));
                     setcookie('ri_visitor', $cookie, ['expires'=>time()+31536000,'path'=>'/','secure'=>!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off','httponly'=>true,'samesite'=>'Lax']);
                 }
                 $visitor = hash_hmac('sha256', $cookie, $config['app']['secret_key']);
                 if (!allow_action($db, $config, 'react', 60, 60)) throw new DomainException('Trop de réactions. Réessayez plus tard.');
-                $db->beginTransaction();
-                $s = $db->prepare("SELECT id FROM refus WHERE id = ? AND status = 'approved'");
-                $s->execute([$id]);
-                if ($s->fetchColumn() !== false) {
-                    $s = $db->prepare('INSERT IGNORE INTO reactions (refus_id, visitor_hash) VALUES (?, ?)');
-                    $s->execute([$id, $visitor]);
-                    if ($s->rowCount()) {
-                        $s = $db->prepare('UPDATE refus SET likes_count = likes_count + 1 WHERE id = ?'); $s->execute([$id]);
-                    }
-                }
-                $db->commit();
+                $result = record_reaction($db, (int)$id, $visitor, $kind);
+                if (reaction_async_requested()) reaction_reply(200, $result);
                 redirect_to('refus', ['id'=>$id]);
             case 'report':
                 $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, ['options'=>['min_range'=>1]]);
@@ -127,6 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } catch (DomainException $exception) {
         if (submit_async_requested()) submit_reply(422, false, $exception->getMessage());
+        if (reaction_async_requested()) reaction_reply(422, ['ok' => false, 'message' => $exception->getMessage()]);
         $formError = $exception->getMessage();
     } catch (Throwable $exception) {
         if ($db->inTransaction()) $db->rollBack();
@@ -160,17 +164,34 @@ if ($page === 'refus') {
     else {
         $visitorCookie = $_COOKIE['ri_visitor'] ?? '';
         $reacted = false;
+        $laughed = false;
         if (is_string($visitorCookie) && preg_match('/\A[a-f0-9]{64}\z/D', $visitorCookie)) {
+            $visitorHash = hash_hmac('sha256', $visitorCookie, $config['app']['secret_key']);
             $s = $db->prepare('SELECT 1 FROM reactions WHERE refus_id=? AND visitor_hash=?');
-            $s->execute([$id, hash_hmac('sha256', $visitorCookie, $config['app']['secret_key'])]);
+            $s->execute([$id, $visitorHash]);
             $reacted = $s->fetchColumn() !== false;
+            $s = $db->prepare('SELECT 1 FROM laugh_reactions WHERE refus_id=? AND visitor_hash=?');
+            $s->execute([$id, $visitorHash]);
+            $laughed = $s->fetchColumn() !== false;
         }
     }
 }
 if ($page === 'moderation' && admin_logged()) {
     $stats = [];
     foreach ($db->query('SELECT status, COUNT(*) AS total FROM refus GROUP BY status') as $row) $stats[$row['status']] = (int)$row['total'];
-    $pending = $db->query("SELECT * FROM refus WHERE status='pending' ORDER BY created_at ASC LIMIT 100")->fetchAll();
+    $adminStatus = is_string($_GET['statut'] ?? null) && in_array($_GET['statut'], ['all','pending','approved','rejected'], true) ? $_GET['statut'] : 'all';
+    $adminPage = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT, ['options'=>['min_range'=>1]]) ?: 1;
+    $whereStatus = $adminStatus === 'all' ? '1=1' : 'status = :status';
+    $countQuery = $db->prepare('SELECT COUNT(*) FROM refus WHERE ' . $whereStatus);
+    if ($adminStatus !== 'all') $countQuery->bindValue(':status', $adminStatus);
+    $countQuery->execute();
+    $adminTotal = (int)$countQuery->fetchColumn();
+    $adminPage = min($adminPage, max(1, (int)ceil($adminTotal / 20)));
+    $listQuery = $db->prepare('SELECT * FROM refus WHERE ' . $whereStatus . ' ORDER BY created_at DESC, id DESC LIMIT 20 OFFSET :offset');
+    if ($adminStatus !== 'all') $listQuery->bindValue(':status', $adminStatus);
+    $listQuery->bindValue(':offset', ($adminPage - 1) * 20, PDO::PARAM_INT);
+    $listQuery->execute();
+    $adminStories = $listQuery->fetchAll();
     $reports = $db->query("SELECT reports.*, refus.title FROM reports JOIN refus ON refus.id = reports.refus_id WHERE reports.status = 'pending' ORDER BY reports.created_at ASC LIMIT 100")->fetchAll();
 }
 $displayName = ['home'=>'Accueil','explorer'=>'Explorer les refus','refus'=>'Témoignage','soumettre'=>'Soumettre un refus','merci'=>'Merci','moderation'=>'Modération','notfound'=>'Page introuvable'][$page];
