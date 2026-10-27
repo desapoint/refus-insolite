@@ -284,7 +284,7 @@ function story_card(array $s): void {
 <section class="page"><div class="container"><div class="page-title"><span class="eyebrow">Votre histoire</span><h1 class="serif">Racontez-nous <span class="coral">ce refus.</span></h1><p>Vous avez reçu un « non » digne d’un sketch ? Déposez la pépite ici. Rire autorisé, noms propres interdits.</p></div>
 <div class="submit-layout"><form id="submitForm" class="form-card" method="post" action="<?= e(link_to('soumettre')) ?>" accept-charset="utf-8">
 <div id="submitFeedback" class="submit-feedback" role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden><span class="feedback-glyph" aria-hidden="true">✦</span><div class="feedback-copy"><strong id="submitFeedbackTitle"></strong><p id="submitFeedbackMessage"></p></div></div>
-<div class="laugh-stage" id="laughStage" aria-hidden="true"><div class="laugh-face">😂</div><div class="laugh-bubbles"><span>HA !</span><span>HA HA !</span><span>HÉHÉ !</span></div><i class="laugh-spark spark-a"></i><i class="laugh-spark spark-b"></i><i class="laugh-spark spark-c"></i></div>
+
 <?= csrf_field() ?><input type="hidden" name="action" value="submit"><div class="field" aria-hidden="true"><label for="website">Ne pas remplir</label><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
 <div class="form-step"><div class="step-num">01</div><div><h2>Votre anecdote</h2><p>Les champs marqués d’un astérisque sont obligatoires.</p></div></div>
 <div class="field"><label for="storyTitle">Titre du témoignage *</label><input id="storyTitle" name="title" class="control" type="text" maxlength="160" minlength="8" value="<?= e($old['title'] ?? '') ?>" placeholder="Ex. Trop compétent pour la photocopieuse…" required></div>
@@ -331,5 +331,57 @@ function story_card(array $s): void {
 <?php else: ?><section class="page"><div class="container page-title"><h1 class="serif">Page introuvable.</h1><p>Ce témoignage n’est pas disponible.</p><a class="btn btn-primary" href="<?= e(link_to('explorer')) ?>">Revenir au catalogue</a></div></section><?php endif ?>
 </main>
 <footer><div class="container"><div class="footer-main"><a href="<?= e(link_to()) ?>" class="brand"><span class="brand-mark"><span>RI!</span></span>refus<span class="brand-dot">.</span>insolites</a><div class="footlinks"><a href="<?= e(link_to('explorer')) ?>">Explorer</a><a href="<?= e(link_to('soumettre')) ?>">Soumettre</a><a href="<?= e(link_to('moderation')) ?>">Administration</a></div></div><div class="foot-note"><span>Témoignages anonymisés, modération avant publication.</span><span>Les plus beaux « non » méritent un public.</span></div></div></footer>
+
+<!-- Scène de rire plein écran commune aux soumissions et aux réactions. Sans ressources externes. -->
+<div class="laugh-stage" id="laughStage" aria-hidden="true" data-kind="submit">
+  <div class="laugh-backdrop"></div>
+  <div class="laugh-rings"><i></i><i></i><i></i></div>
+  <div class="laugh-scene">
+    <div class="laugh-comic-words" aria-hidden="true">
+      <span class="laugh-word">HA !</span><span class="laugh-word">HA HA !</span><span class="laugh-word">AHAHA !</span>
+    </div>
+    <svg class="laugh-character" viewBox="0 0 320 340" xmlns="http://www.w3.org/2000/svg" focusable="false" aria-hidden="true">
+      <ellipse class="laugh-ground-shadow" cx="161" cy="319" rx="97" ry="12" fill="#131d32" opacity=".18"/>
+      <g class="laugh-figure">
+        <path d="M89 278 Q93 223 117 209 L202 209 Q230 232 235 280 L240 301 Q160 315 80 301Z" fill="#497caa" stroke="#1e3546" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M139 216 L160 247 L183 216" fill="none" stroke="#f6d8b2" stroke-width="11" stroke-linecap="round"/>
+        <g class="laugh-arm-left">
+          <path d="M106 233 Q71 240 62 270 L102 287 Q113 269 127 257Z" fill="#497caa" stroke="#1e3546" stroke-width="6" stroke-linejoin="round"/>
+          <ellipse cx="97" cy="288" rx="20" ry="15" fill="#ffcd8f" stroke="#1e3546" stroke-width="5"/>
+        </g>
+        <g class="laugh-arm-right">
+          <path d="M215 231 Q255 236 262 267 L226 287 Q215 267 197 257Z" fill="#497caa" stroke="#1e3546" stroke-width="6" stroke-linejoin="round"/>
+          <ellipse cx="225" cy="287" rx="20" ry="15" fill="#ffcd8f" stroke="#1e3546" stroke-width="5"/>
+        </g>
+        <g class="laugh-head">
+          <ellipse cx="160" cy="126" rx="102" ry="99" fill="#ffcd8f" stroke="#1e3546" stroke-width="8"/>
+          <path d="M88 82 Q110 28 165 25 Q213 23 242 68 Q212 61 203 39 Q177 69 135 56 Q110 78 88 82Z" fill="#2b344a" stroke="#1e3546" stroke-width="5" stroke-linejoin="round"/>
+          <ellipse cx="62" cy="138" rx="13" ry="22" fill="#ffcd8f" stroke="#1e3546" stroke-width="6"/>
+          <ellipse cx="258" cy="138" rx="13" ry="22" fill="#ffcd8f" stroke="#1e3546" stroke-width="6"/>
+          <ellipse cx="101" cy="164" rx="23" ry="14" fill="#ee8d82" opacity=".52"/>
+          <ellipse cx="219" cy="164" rx="23" ry="14" fill="#ee8d82" opacity=".52"/>
+          <g class="laugh-eyes" fill="none" stroke="#26374a" stroke-width="8" stroke-linecap="round">
+            <path d="M94 117 Q115 95 139 117"/><path d="M182 117 Q205 95 226 117"/>
+            <path d="M96 86 L125 82 M196 82 L225 86" stroke-width="6"/>
+          </g>
+          <g class="laugh-mouth">
+            <path d="M118 156 Q160 135 203 156 Q206 216 161 226 Q112 215 118 156Z" fill="#61263d" stroke="#29354b" stroke-width="7" stroke-linejoin="round"/>
+            <path d="M121 157 Q158 143 201 157 L196 176 Q159 186 125 174Z" fill="#fff8eb"/>
+            <ellipse cx="164" cy="216" rx="27" ry="15" fill="#f17f85"/>
+          </g>
+          <g class="laugh-tear laugh-tear-left"><path d="M83 123 Q65 149 76 161 Q96 160 83 123Z" fill="#91def6" stroke="#367b9e" stroke-width="3"/></g>
+          <g class="laugh-tear laugh-tear-right"><path d="M239 123 Q259 148 247 160 Q226 162 239 123Z" fill="#91def6" stroke="#367b9e" stroke-width="3"/></g>
+        </g>
+      </g>
+      <path class="laugh-shine" d="M36 77 l12 -25 l10 28 l25 9 l-25 10 l-10 27 l-12 -27 l-25 -10Z" fill="#ffe89d"/>
+      <path class="laugh-shine laugh-shine-second" d="M280 192 l8 -19 l7 20 l19 7 l-19 8 l-7 19 l-8 -19 l-19 -8Z" fill="#ffe89d"/>
+    </svg>
+    <div class="laugh-caption" id="laughCaption">ON N'EST PAS PRÊTS !</div>
+    <div class="laugh-subcaption" id="laughSubcaption">Le comité des sourcils levés a perdu son sérieux.</div>
+  </div>
+  <div class="laugh-confetti" aria-hidden="true">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  </div>
+</div>
 </body></html>
 
