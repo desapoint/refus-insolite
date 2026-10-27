@@ -32,7 +32,22 @@ function redirect_to(string $page, array $params = []): never {
     header('Location: ' . link_to($page, $params), true, 303);
     exit;
 }
+function submit_async_requested(): bool {
+    $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+    return ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'
+        && ($_POST['action'] ?? null) === 'submit'
+        && is_string($accept) && str_contains(strtolower($accept), 'application/json');
+}
+function submit_reply(int $status, bool $ok, string $message): never {
+    http_response_code($status);
+    header('Content-Type: application/json; charset=UTF-8');
+    header('X-Content-Type-Options: nosniff');
+    header('Cache-Control: no-store');
+    echo json_encode(['ok' => $ok, 'message' => $message], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+    exit;
+}
 function fail_public(int $code, string $message): never {
+    if (submit_async_requested()) submit_reply($code, false, $message);
     http_response_code($code);
     header('Content-Type: text/html; charset=UTF-8');
     echo '<!doctype html><html lang="fr"><meta charset="utf-8"><title>Refus Insolites</title><body style="font:16px system-ui;max-width:640px;margin:12vh auto;padding:20px"><h1>Refus Insolites</h1><p>' . e($message) . '</p></body></html>';
@@ -58,11 +73,11 @@ function verify_csrf(): void {
 function config_load(): array {
     // Configuration dans le private/ du domaine HestiaCP, hors public_html.
     $path = dirname(__DIR__, 2) . '/private/refus-insolite.php';
-    if (!is_file($path)) fail_public(503, 'Configuration non terminée. Consultez le fichier README du projet.');
+    if (!is_file($path)) fail_public(503, 'Le site est momentanément indisponible. Réessayez plus tard.');
     $config = require $path;
-    if (!is_array($config)) fail_public(503, 'Configuration invalide.');
+    if (!is_array($config)) fail_public(503, 'Le site est momentanément indisponible. Réessayez plus tard.');
     $secret = $config['app']['secret_key'] ?? '';
-    if (!is_string($secret) || !preg_match('/\A[a-f0-9]{64}\z/iD', $secret)) fail_public(503, 'Clé de sécurité manquante ou invalide.');
+    if (!is_string($secret) || !preg_match('/\A[a-f0-9]{64}\z/iD', $secret)) fail_public(503, 'Le site est momentanément indisponible. Réessayez plus tard.');
     return $config;
 }
 function db_open(array $cfg): PDO {

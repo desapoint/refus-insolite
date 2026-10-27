@@ -4,6 +4,12 @@
 Options -Indexes -MultiViews
 DirectoryIndex index.php
 
+# Supprimer les en-têtes applicatifs quand mod_headers est disponible.
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+</IfModule>
+
 <IfModule !mod_rewrite.c>
     Require all denied
 </IfModule>

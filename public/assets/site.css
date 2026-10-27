@@ -20,3 +20,33 @@
 
 .coral{color:var(--accent)}.form-card>.field{margin-bottom:20px}.form-card>.field label,.form-card>.form-row label{font-size:13px;font-weight:800}.form-card>.form-row{margin-bottom:25px}.privacy{margin:14px 0}.privacy p{margin:8px 0 0}.submit-aside .sidebox{position:relative}.form-card .checkline{font-size:12px;display:flex}.stat strong{display:block;font-size:32px;line-height:1.1}.stat span{color:var(--muted);font-size:12px}.sidebox .control{margin:8px 0 12px}.bigquote{white-space:pre-wrap;overflow-wrap:anywhere}.story-card h3,.story-card p,.admin-row p,.detail-card p{overflow-wrap:anywhere}.detail-action form{display:inline-flex}.paper-card{overflow-wrap:anywhere}.form-card .step-num{flex:none}.preview-box{position:relative}
 
+
+
+/* Le musée a de l'humour : interactions ludiques sans animations intrusives. */
+@keyframes comic-wobble{0%,100%{transform:rotate(-10deg) scale(1)}25%{transform:rotate(5deg) scale(1.1)}55%{transform:rotate(-4deg) scale(.97)}80%{transform:rotate(4deg) scale(1.04)}}
+@keyframes chuckle{0%,100%{transform:translateY(0) rotate(-8deg)}25%{transform:translateY(-9px) rotate(8deg)}50%{transform:translateY(4px) rotate(-4deg)}75%{transform:translateY(-5px) rotate(10deg)}}
+@keyframes laugh-pop{0%{opacity:0;transform:translateY(13px) rotate(-12deg) scale(.35)}35%{opacity:1;transform:translateY(-13px) rotate(9deg) scale(1.13)}80%{opacity:1}100%{opacity:0;transform:translateY(-38px) rotate(-6deg) scale(1.06)}}
+@keyframes hooray{0%{transform:translateY(9px) scale(.5);opacity:0}60%{transform:translateY(-5px) scale(1.16);opacity:1}100%{transform:translateY(0) scale(1);opacity:1}}
+@keyframes little-shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
+@keyframes tiny-glow{0%,100%{box-shadow:0 0 0 rgba(252,101,75,0)}50%{box-shadow:0 0 0 6px rgba(252,101,75,.12)}}
+.paper-card:hover .stamp{animation:comic-wobble .7s ease-out}.story-card{transition:transform .18s ease,box-shadow .18s ease}.story-card:hover{transform:translateY(-5px) rotate(-.55deg)}
+.form-card:has(.laugh-stage.is-sending) #submitButton{animation:tiny-glow 1.2s ease-in-out infinite}
+.submit-feedback{border:2px solid #cfddd4;background:#eff9f1;border-radius:14px;padding:15px 17px;margin:0 0 20px;display:flex;align-items:flex-start;gap:12px;color:#245c45;outline-offset:4px}
+.submit-feedback.error{border-color:#efc1b7;background:#fff2ef;color:#923d36;animation:little-shake .33s ease-out}
+.submit-feedback strong{display:block;font-size:17px;margin:0 0 4px}.submit-feedback span span{display:block;font-size:13px;line-height:1.6}.feedback-glyph{font-size:25px;line-height:1}
+.laugh-stage{position:relative;display:none;align-items:center;justify-content:center;gap:26px;min-height:122px;margin:0 0 24px;padding:15px 25px;border:2px dashed #ffd1b6;border-radius:16px;background:linear-gradient(125deg,#fff5e9,#fff0ed);overflow:hidden}
+.laugh-stage.is-sending,.laugh-stage.is-success{display:flex;animation:hooray .38s ease-out both}
+.laugh-face{font-size:65px;line-height:1;filter:drop-shadow(4px 6px 0 #fc654b18);transform-origin:center}
+.laugh-stage.is-sending .laugh-face{animation:chuckle .58s ease-in-out infinite}
+.laugh-stage.is-success .laugh-face{animation:chuckle .58s ease-in-out 3}
+.laugh-bubbles{position:relative;display:flex;align-items:center;gap:9px;flex-wrap:wrap;max-width:240px}
+.laugh-bubbles span{font-weight:950;font-size:13px;color:#9f3c2a;background:#fff;border:2px solid #edb49f;box-shadow:2px 3px 0 #e7a491;border-radius:10px;padding:5px 9px;transform:rotate(-7deg)}
+.laugh-stage.is-sending .laugh-bubbles span,.laugh-stage.is-success .laugh-bubbles span{animation:laugh-pop 1.22s ease-in-out infinite}
+.laugh-bubbles span:nth-child(2){animation-delay:.24s!important;transform:rotate(7deg)}
+.laugh-bubbles span:nth-child(3){animation-delay:.48s!important}
+.laugh-stage.is-success .laugh-bubbles span{animation-iteration-count:2}
+.laugh-spark{position:absolute;width:12px;height:12px;background:#ffbd42;transform:rotate(35deg);border-radius:3px;opacity:0}
+.spark-a{top:16px;left:15%}.spark-b{right:17%;bottom:19px;background:#fc654b}.spark-c{top:10px;right:27%;background:#6dbda0}
+.laugh-stage.is-success .laugh-spark{opacity:1;animation:hooray .7s ease-out both}.laugh-stage.is-success .spark-b{animation-delay:.18s}.laugh-stage.is-success .spark-c{animation-delay:.35s}
+@media(max-width:700px){.laugh-stage{gap:15px;padding:12px}.laugh-face{font-size:53px}.laugh-bubbles{gap:5px}.laugh-bubbles span{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.story-card:hover{transform:none}.paper-card:hover .stamp,.laugh-stage,.laugh-face,.laugh-bubbles span,.laugh-spark,.submit-feedback.error,.form-card:has(.laugh-stage.is-sending) #submitButton{animation:none!important}}

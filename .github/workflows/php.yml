@@ -35,3 +35,7 @@ jobs:
         run: php tests/routes.php
       - name: Test migrations et PDO MariaDB
         run: php tests/smoke.php
+      - name: Tests navigateur (sans dépendance)
+        run: node tests/ajax-ui.cjs
+      - name: Tests HTTP AJAX de bout en bout
+        run: bash tests/ajax-api.sh

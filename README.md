@@ -104,3 +104,9 @@ find . -name '*.php' -print -exec php -l {} \;
 
 L'analyse syntaxique seule ne remplace pas un essai complet avec une vraie instance MariaDB. Tester la création de la base, la migration automatique, une soumission, l'approbation, la recherche et un signalement sur un environnement de test avant de publier le domaine.
 
+
+## Envoi sans rechargement
+
+Le formulaire `/soumettre` envoie les données sans recharger la page si JavaScript est actif. Le serveur répond en JSON (201 accepté, 422 validation, 403 CSRF, 429 limitation, 500 erreur), conserve les contrôles existants et ne rend jamais un témoignage public avant modération. Le navigateur conserve tous les champs en cas d'erreur et ne vide le formulaire qu'après une réponse de succès confirmée. Sans JavaScript, l'envoi classique et la page `/merci` continuent de fonctionner.
+
+Aucune mention du langage ou de la base n'est affichée dans l'interface. Les messages d'installation publics sont génériques. L'application retire `X-Powered-By` si possible ; les bannières ajoutées par Nginx/Apache se règlent au niveau du serveur. Ne considérez pas le masquage de versions comme une protection contre les vulnérabilités : les mises à jour et le cloisonnement restent indispensables.
