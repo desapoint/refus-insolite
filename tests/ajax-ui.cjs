@@ -17,14 +17,21 @@ function setup(response) {
     add(...names) { names.forEach(x => stageClasses.add(x)); },
     remove(...names) { names.forEach(x => stageClasses.delete(x)); }
   }};
-  const button = {textContent: 'Envoyer cette pépite →', disabled: false};
+  const buttonClasses = new Set();
+  const button = {
+    textContent: 'Envoyer cette pépite →', disabled: false,
+    classList: {add(name){buttonClasses.add(name);},remove(name){buttonClasses.delete(name);}}
+  };
   const title = {textContent: ''};
   const message = {textContent: ''};
+  const fullTitle = {textContent: ''};
+  const fullSubtitle = {textContent: ''};
   const form = {action: {tagName:'INPUT'}, getAttribute(name) {assert.equal(name,'action');return '/soumettre';}, event: null, reportValidity: () => true,
     addEventListener(name, callback) { if (name === 'submit') this.event = callback; },
     reset() { state.resetCount += 1; }};
   const elements = {submitForm: form, submitButton: button, submitFeedback: feedback,
-    submitFeedbackTitle: title, submitFeedbackMessage: message, laughStage: stage};
+    submitFeedbackTitle: title, submitFeedbackMessage: message, laughStage: stage,
+    laughCaption: fullTitle, laughSubcaption: fullSubtitle};
   const window = {getElementById(id) {return elements[id] || null;}};
   vm.runInNewContext(code, {
     document: window,
@@ -33,7 +40,7 @@ function setup(response) {
     AbortController: class {constructor() { this.signal = {}; } abort() {}},
     setTimeout: () => 1, clearTimeout: () => undefined, console
   });
-  return {form, button, feedback, title, message, state, stageClasses, classes};
+  return {form, button, feedback, title, message, state, stageClasses, classes, fullTitle, fullSubtitle};
 }
 const resp = (ok, message, status = ok ? 201 : 422) => () => ({
   ok: status < 400, headers: {get() {return 'application/json; charset=UTF-8';}},
@@ -50,16 +57,19 @@ const send = ctx => ctx.form.event({preventDefault() {}});
   assert.equal(success.state.resetCount, 1);
   assert.equal(success.feedback.hidden, false);
   assert.equal(success.title.textContent, 'AHAHA ! Une pépite de plus !');
-  assert(success.stageClasses.has('is-success'));
+  assert(success.stageClasses.has('is-success'),'animation plein écran au succès');
+  assert.match(success.fullTitle.textContent,/DANS LA BOÎTE/);
   assert.equal(success.button.disabled, false);
   const validation = setup(resp(false, 'Titre trop court.'));
   await send(validation);
   assert.equal(validation.state.resetCount, 0, 'Ne jamais vider sur un échec métier');
   assert.equal(validation.message.textContent, 'Titre trop court.');
   assert(validation.classes.has('error'));
+  assert(!validation.stageClasses.has('is-success'),'pas de fausse célébration en cas de validation refusée');
   const network = setup(async () => {throw new Error('offline');});
   await send(network);
   assert.equal(network.state.resetCount, 0, 'Ne jamais vider sur une erreur réseau');
   assert.equal(network.feedback.hidden, false);
+  assert(!network.stageClasses.has('is-success'),'pas de célébration en cas de panne réseau');
   console.log('Tests soumission AJAX UI : OK');
 })().catch(error => { console.error(error); process.exitCode = 1; });
