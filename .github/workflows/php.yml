@@ -37,5 +37,7 @@ jobs:
         run: php tests/smoke.php
       - name: Tests navigateur (sans dépendance)
         run: node tests/ajax-ui.cjs
+      - name: Tests réactions AJAX et animations (sans dépendance)
+        run: node tests/reactions-ui.cjs
       - name: Tests HTTP AJAX de bout en bout
         run: bash tests/ajax-api.sh
