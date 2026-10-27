@@ -251,3 +251,193 @@
 /* Petit rire du bouton pendant l'envoi ; le grand fou rire n'arrive qu'après confirmation. */
 #submitButton.is-laugh-pending{animation:full-submit-giggle .42s ease-in-out infinite;box-shadow:0 0 0 5px rgba(250,112,72,.12)}
 @keyframes full-submit-giggle{0%,100%{transform:rotate(0) translateY(0)}30%{transform:rotate(-1.4deg) translateY(-2px)}65%{transform:rotate(1.4deg) translateY(1px)}}
+
+
+/* Refus Insolites — sketchs de réaction entièrement en CSS/SVG.
+   Aucun état permanent ni requête supplémentaire : simple effet temporaire. */
+.laugh-act{
+  position:relative;display:grid;place-items:center;isolation:isolate;
+  width:min(48vh,420px,72vw);height:min(51vh,455px);min-width:0;flex-shrink:1
+}
+.laugh-act .laugh-character{
+  position:relative;z-index:2;width:100%;height:100%;max-height:100%;overflow:visible;
+  transform-origin:50% 84%
+}
+.comic-chair{display:none;position:absolute;z-index:1;inset:15% 15% 5%;transform-origin:center 85%;pointer-events:none}
+.comic-chair-back{
+  position:absolute;display:block;top:6%;left:24%;width:52%;height:55%;
+  background:#f7c461;border:8px solid #293b51;border-radius:26% 26% 12% 12%;
+  box-shadow:inset -11px -6px 0 #dc9550
+}
+.comic-chair-seat{
+  position:absolute;display:block;bottom:16%;left:12%;width:76%;height:14%;
+  background:#d37e53;border:7px solid #293b51;border-radius:36px;transform:skew(-7deg)
+}
+.comic-chair-leg{position:absolute;display:block;bottom:-6%;width:9%;height:34%;background:#293b51;border-radius:8px}
+.comic-chair-leg.left{left:20%;transform:rotate(12deg)}
+.comic-chair-leg.right{right:20%;transform:rotate(-12deg)}
+.laugh-stage[data-variant="chair"] .comic-chair{display:block}
+.laugh-stage[data-variant="chair"].is-success .comic-chair{
+  animation:comic-chair-wobble 2.4s ease-in-out both
+}
+.laugh-stage[data-variant="chair"].is-success .laugh-character{
+  animation:comic-chair-fall 2.4s cubic-bezier(.1,.9,.3,1) both
+}
+.laugh-stage[data-variant="chair"].is-success .laugh-head{
+  animation:comic-head-shake .25s ease-in-out 8 both
+}
+/* Variante 3 : bouche qui s'ouvre démesurément et mâchoire qui descend. */
+.comic-impact-text{display:none;position:absolute;z-index:5;top:42%;right:-8%;
+  font-weight:1000;letter-spacing:-.075em;font-size:clamp(23px,5vw,49px);
+  color:#fff1cb;-webkit-text-stroke:2px #263749;text-shadow:4px 5px 0 #263749;
+  transform:rotate(-17deg)
+}
+.laugh-stage[data-variant="jaw"] .comic-impact-text{display:block;opacity:0}
+.laugh-stage[data-variant="jaw"].is-success .comic-impact-text{
+  animation:comic-jaw-boom 1.25s cubic-bezier(.2,1.4,.4,1) .45s both
+}
+.laugh-stage[data-variant="jaw"].is-success .laugh-mouth{
+  animation:comic-wide-jaw 1.8s cubic-bezier(.15,1,.3,1) both
+}
+.laugh-stage[data-variant="jaw"].is-success .laugh-head{
+  animation:comic-jaw-shudder .58s ease-in-out 4 both
+}
+.laugh-stage[data-variant="jaw"].is-success .laugh-figure{
+  animation:comic-shock .34s ease-in-out 6 both
+}
+/* Variante 4 : une véritable petite imprimante en CSS expulse des fiches absurdes. */
+.comic-printer{
+  display:none;position:absolute;z-index:5;inset:3%;overflow:visible;
+  filter:drop-shadow(0 13px 0 rgba(43,49,67,.17))
+}
+.laugh-stage[data-variant="printer"] .comic-printer{display:block}
+.laugh-stage[data-variant="printer"] .laugh-character{visibility:hidden}
+.comic-printer-case{
+  position:absolute;left:10%;top:35%;width:80%;height:42%;
+  background:linear-gradient(#f6f1e9 0 20%,#87a8ae 21% 78%,#537c87 79% 100%);
+  border:8px solid #263b4e;border-radius:17px 17px 26px 26px;
+  box-shadow:inset -10px -9px 0 rgba(33,47,61,.15)
+}
+.printer-control{position:absolute;display:flex;gap:9px;top:12%;right:9%}
+.printer-control i{display:block;width:14px;height:14px;background:#fbda66;
+  border:3px solid #263b4e;border-radius:50%}
+.printer-control i:first-child{background:#e37359}
+.printer-control i:last-child{background:#79c6a8}
+.printer-slot{position:absolute;left:9%;right:9%;bottom:31%;height:12%;
+  background:#263b4e;border-radius:8px;box-shadow:0 7px 0 rgba(255,255,255,.3)}
+.comic-printer-case strong{position:absolute;left:8%;right:8%;bottom:7%;display:block;
+  white-space:nowrap;text-align:center;font:900 clamp(10px,2vw,14px)/1.1 system-ui,sans-serif;
+  letter-spacing:.035em;color:#f6fcff;text-shadow:1px 2px 0 #263b4e}
+.comic-printer-tray{position:absolute;left:16%;right:16%;bottom:6%;height:20%;
+  background:#e8f1eb;border:7px solid #263b4e;border-radius:3px 3px 19px 19px;transform:perspective(160px) rotateX(42deg)}
+.comic-paper{
+  position:absolute;top:34%;left:25%;width:50%;height:35%;display:grid;place-items:center;
+  border:5px solid #263b4e;background:#fff9eb;color:#c64638;
+  box-shadow:5px 6px 0 #263b4e16;opacity:0;z-index:3
+}
+.comic-paper span{display:block;font:1000 clamp(15px,3vw,26px)/1.02 system-ui,sans-serif;text-align:center}
+.comic-paper.paper-two{background:#fff1bf}.comic-paper.paper-three{background:#dafff0}
+.laugh-stage[data-variant="printer"].is-success .comic-printer-case{
+  animation:comic-printer-rattle .13s ease-in-out 17 both
+}
+.laugh-stage[data-variant="printer"].is-success .paper-one{
+  animation:comic-paper-one 1.55s cubic-bezier(.18,.65,.3,1) .18s both
+}
+.laugh-stage[data-variant="printer"].is-success .paper-two{
+  animation:comic-paper-two 1.55s cubic-bezier(.18,.65,.3,1) .55s both
+}
+.laugh-stage[data-variant="printer"].is-success .paper-three{
+  animation:comic-paper-three 1.55s cubic-bezier(.18,.65,.3,1) .93s both
+}
+/* Tampon à encre rouge. Visible seulement pour une réaction acceptée,
+   pas pour une soumission. Le choix du texte est aléatoire, local au navigateur. */
+.comic-stamp{
+  display:none;position:absolute;z-index:9;top:49%;left:50%;
+  width:min(78vw,450px);min-height:114px;pointer-events:none;
+  transform-origin:center;filter:drop-shadow(0 6px 0 rgba(109,30,25,.22))
+}
+.laugh-stage[data-stamp="yes"].is-success .comic-stamp{
+  display:grid;place-items:center;
+  animation:comic-ink-slam 2.65s .22s both
+}
+.comic-stamp-ink{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  width:100%;min-height:110px;padding:19px 17px;border:9px double #ac272c;
+  border-radius:12px;color:#ac272c;
+  background:rgba(255,246,230,.91);text-align:center;
+  transform:rotate(-11deg);box-shadow:inset 0 0 0 2px rgba(172,39,44,.27),0 0 0 3px rgba(255,255,255,.3)
+}
+.comic-stamp-caption{font:1000 clamp(21px,4vw,36px)/1.08 system-ui,sans-serif;
+  text-transform:uppercase;letter-spacing:-.04em;max-width:100%;overflow-wrap:break-word}
+.comic-stamp-stars{font-size:19px;letter-spacing:.2em;line-height:1}
+.stamp-ink-splash{position:absolute;z-index:-1;inset:-40px;background:
+  radial-gradient(circle at 11% 41%,#b22d3380 0 5px,transparent 7px),
+  radial-gradient(circle at 90% 20%,#b22d3370 0 8px,transparent 10px),
+  radial-gradient(circle at 84% 82%,#b22d3380 0 4px,transparent 6px),
+  radial-gradient(circle at 24% 3%,#b22d3380 0 5px,transparent 7px);
+  opacity:0
+}
+.laugh-stage[data-stamp="yes"].is-success .stamp-ink-splash{
+  animation:comic-ink-splash .45s .87s ease-out both
+}
+@keyframes comic-ink-slam{
+  0%,24%{opacity:0;transform:translate(-50%,-210%) scale(2.8) rotate(17deg)}
+  32%{opacity:1;transform:translate(-50%,-50%) scale(1.14) rotate(-7deg)}
+  36%{opacity:1;transform:translate(-50%,-50%) scale(.87) rotate(3deg)}
+  44%{opacity:1;transform:translate(-50%,-50%) scale(1.02)}
+  65%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes comic-ink-splash{0%{opacity:0;transform:scale(.4)}80%,100%{opacity:1;transform:scale(1.25)}}
+@keyframes comic-chair-wobble{
+  0%,16%{transform:rotate(0) translateY(0)}
+  31%{transform:rotate(9deg) translateY(5px)}
+  54%,76%{transform:rotate(25deg) translate(24px,26px)}
+  100%{transform:rotate(21deg) translate(24px,27px)}
+}
+@keyframes comic-chair-fall{
+  0%,16%{transform:translate(0,0) rotate(0)}
+  30%{transform:translate(1px,-19px) rotate(-9deg)}
+  45%{transform:translate(10px,-10px) rotate(17deg)}
+  65%{transform:translate(38px,58px) rotate(43deg)}
+  77%{transform:translate(31px,50px) rotate(31deg)}
+  100%{transform:translate(34px,52px) rotate(35deg)}
+}
+@keyframes comic-head-shake{0%,100%{transform:rotate(0)}50%{transform:rotate(-13deg)}}
+@keyframes comic-wide-jaw{
+  0%,18%{transform:scaleY(.5) translateY(-4px)}
+  28%{transform:scaleY(1.95) translateY(9px)}
+  43%{transform:scaleY(1.45) translateY(6px)}
+  64%,100%{transform:scaleY(2.05) translateY(11px)}
+}
+@keyframes comic-jaw-shudder{0%,100%{transform:rotate(0)}50%{transform:rotate(7deg)}}
+@keyframes comic-shock{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes comic-jaw-boom{
+  0%{opacity:0;transform:scale(.2) rotate(-40deg)}
+  24%{opacity:1;transform:scale(1.3) rotate(-10deg)}
+  42%{transform:scale(.9) rotate(-16deg)}
+  72%,100%{opacity:1;transform:scale(1.02) rotate(-17deg)}
+}
+@keyframes comic-printer-rattle{0%,100%{transform:translateX(-3px)}50%{transform:translateX(4px)}}
+@keyframes comic-paper-one{
+  0%,6%{opacity:0;transform:translateY(34px) rotate(0) scale(.75)}
+  18%{opacity:1}
+  55%,100%{opacity:1;transform:translate(-65%,-115%) rotate(-28deg) scale(.93)}
+}
+@keyframes comic-paper-two{
+  0%,7%{opacity:0;transform:translateY(30px) rotate(0) scale(.75)}
+  19%{opacity:1}
+  60%,100%{opacity:1;transform:translate(65%,-132%) rotate(22deg) scale(.98)}
+}
+@keyframes comic-paper-three{
+  0%,7%{opacity:0;transform:translateY(24px) rotate(0) scale(.75)}
+  19%{opacity:1}
+  62%,100%{opacity:1;transform:translate(-14%,-163%) rotate(-8deg) scale(1.02)}
+}
+@media(max-width:540px){
+  .laugh-act{width:min(76vw,310px);height:min(45dvh,365px)}
+  .comic-impact-text{right:-2%;font-size:27px}
+  .comic-printer-case{border-width:6px}
+  .comic-stamp{top:56%;width:min(85vw,350px)}
+  .comic-stamp-ink{min-height:83px;border-width:7px;padding:10px}
+  .comic-stamp-caption{font-size:clamp(19px,5vw,27px)}
+}
