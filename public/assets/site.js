@@ -33,21 +33,64 @@ if (copy) copy.addEventListener('click', async () => {
 const fullScreenLaugh = document.getElementById('laughStage');
 let laughFadeTimer;
 let laughHideTimer;
+let lastLaughVariant = '';
+let lastStampCaption = '';
+
+const comicVariants = ['belly', 'chair', 'jaw', 'printer'];
+const comicStamps = [
+  'ABSURDITÉ CERTIFIÉE',
+  'RH EN ROUE LIBRE',
+  'NON-SENS HOMOLOGUÉ',
+  'DÉCISION LUNAIRE',
+  'LOGIQUE INTROUVABLE',
+  'REFUS DE COMPÉTITION'
+];
+
+// Pas de stockage, pas de communication serveur : seules les réactions déjà
+// enregistrées par le mécanisme existant déclenchent un tampon temporaire.
+function pickComicVariation(choices, previous) {
+  const candidates = choices.filter((choice) => choice !== previous);
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
 function playFullScreenLaugh(kind) {
   if (!fullScreenLaugh) return;
   clearTimeout(laughFadeTimer);
   clearTimeout(laughHideTimer);
-  const scenes = {
-    submit: ["C'EST DANS LA BOÎTE !", "Le jury a besoin d'une minute pour reprendre son souffle."],
-    laugh: ["AHAHA ! C'EST DU GÉNIE !", "Ce refus vient officiellement de nous achever."],
-    relate: ["AH NON, PAS TOI AUSSI !", "Bienvenue dans le club très sélect des refus absurdes."]
+
+  const variant = pickComicVariation(comicVariants, lastLaughVariant);
+  lastLaughVariant = variant;
+  const isReaction = kind === 'laugh' || kind === 'relate';
+  const subtitles = {
+    belly: "Le comité des sourcils levés est plié en deux.",
+    chair: "La chaise n'a pas survécu à cette histoire.",
+    jaw: "La mâchoire est officiellement portée disparue.",
+    printer: "L'imprimante vient de sortir un refus supplémentaire."
   };
-  const [title, subtitle] = scenes[kind] || scenes.laugh;
+  const titles = {
+    submit: "C'EST DANS LA BOÎTE !",
+    laugh: "AHAHA ! C'EST DU GÉNIE !",
+    relate: "AH NON, PAS TOI AUSSI !"
+  };
   const label = document.getElementById('laughCaption');
   const detail = document.getElementById('laughSubcaption');
-  if (label) label.textContent = title;
-  if (detail) detail.textContent = subtitle;
-  if (fullScreenLaugh.dataset) fullScreenLaugh.dataset.kind = kind;
+  if (label) label.textContent = titles[kind] || titles.laugh;
+  if (detail) detail.textContent = kind === 'submit'
+    ? "Votre histoire attend la modération. " + subtitles[variant]
+    : subtitles[variant];
+
+  fullScreenLaugh.dataset.kind = kind;
+  fullScreenLaugh.dataset.variant = variant;
+  fullScreenLaugh.dataset.stamp = isReaction ? 'yes' : 'no';
+
+  if (isReaction) {
+    const stampText = pickComicVariation(comicStamps, lastStampCaption);
+    lastStampCaption = stampText;
+    const stampCaption = document.getElementById('comicStampCaption');
+    if (stampCaption) stampCaption.textContent = stampText;
+  }
+
+  // Supprime puis remet la classe afin de rejouer les animations CSS
+  // même lorsque l'utilisateur clique une deuxième fois très rapidement.
   fullScreenLaugh.classList.remove('is-success', 'is-sending', 'is-leaving');
   void fullScreenLaugh.offsetWidth;
   fullScreenLaugh.classList.add('is-success');
@@ -56,7 +99,7 @@ function playFullScreenLaugh(kind) {
     laughHideTimer = setTimeout(() => {
       fullScreenLaugh.classList.remove('is-success', 'is-leaving');
     }, 360);
-  }, 3000);
+  }, 3250);
 }
 
  // Soumission asynchrone : on ne perd jamais le récit en cas de refus du serveur.
