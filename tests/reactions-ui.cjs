@@ -20,6 +20,7 @@ function setup(fetchImpl) {
   const fullStage = {offsetWidth:1,dataset:{},classList:classes()};
   const fullTitle = {textContent:''};
   const fullSubtitle = {textContent:''};
+  const stampText = {textContent:''};
   const forms = ['relate','laugh'].map(kind => {
     const button = {disabled:false,classList:classes()};
     const count = {textContent:'0'};
@@ -36,7 +37,8 @@ function setup(fetchImpl) {
   const doc = {
     getElementById(id) {return ({
       reactionFeedback:feedback,reactionCelebration:celebration,reactionPanel:panel,
-      laughStage:fullStage,laughCaption:fullTitle,laughSubcaption:fullSubtitle
+      laughStage:fullStage,laughCaption:fullTitle,laughSubcaption:fullSubtitle,
+      comicStampCaption:stampText
     })[id] || null;},
     querySelectorAll(selector) {return selector === '.reaction-form' ? forms : [];}
   };
@@ -48,7 +50,7 @@ function setup(fetchImpl) {
     setTimeout: () => 1, clearTimeout: () => undefined,
     console
   });
-  return {forms,feedback,celebration,panel,fullStage,fullTitle,fullSubtitle,get calls(){return calls;}};
+  return {forms,feedback,celebration,panel,fullStage,fullTitle,fullSubtitle,stampText,get calls(){return calls;}};
 }
 const response = obj => ({ok:true,headers:{get:()=> 'application/json'},json:async()=>obj});
 async function submit(form) {await form.callback({preventDefault(){}});}
@@ -64,6 +66,11 @@ async function submit(form) {await form.callback({preventDefault(){}});}
   assert.equal(ui.forms[0].count.textContent,1);
   assert(ui.fullStage.classList.state.has('is-success'),'scène plein écran après première réaction');
   assert.equal(ui.fullStage.dataset.kind,'relate');
+  assert.equal(ui.fullStage.dataset.stamp,'yes','tampon local après réaction');
+  const firstVariant = ui.fullStage.dataset.variant;
+  assert(['belly','chair','jaw','printer'].includes(firstVariant));
+  assert(ui.stampText.textContent.length > 0,'le tampon contient une légende');
+  const firstStamp = ui.stampText.textContent;
   assert.match(ui.fullTitle.textContent,/PAS TOI AUSSI/);
   assert.equal(ui.forms[1].count.textContent,0);
   await submit(ui.forms[0]);
@@ -76,6 +83,8 @@ async function submit(form) {await form.callback({preventDefault(){}});}
   assert.equal(ui.feedback.hidden, true, 'pas de confirmation qui déplace les boutons');
   assert.equal(ui.feedback.textContent, '', 'la réaction est confirmée par animation et compteur');
   assert.equal(ui.fullStage.dataset.kind,'laugh','scène rire après clic');
+  assert.notEqual(ui.fullStage.dataset.variant,firstVariant,'pas deux fois de suite la même scène');
+  assert.notEqual(ui.stampText.textContent,firstStamp,'pas deux fois de suite le même tampon');
   assert.match(ui.fullTitle.textContent,/AHAHA/);
 
   const failed = setup(async()=>{throw new Error('Connexion momentanément indisponible');});
@@ -84,5 +93,6 @@ async function submit(form) {await form.callback({preventDefault(){}});}
   assert.equal(failed.feedback.hidden,false);
   assert(failed.feedback.classList.state.has('error'));
   assert(!failed.fullStage.classList.state.has('is-success'),'aucune célébration si le réseau échoue');
+  assert.equal(failed.stampText.textContent,'','aucun tampon si erreur');
   console.log('Tests AJAX UI réactions : OK');
 })().catch(e=>{console.error(e);process.exitCode=1;});
