@@ -112,8 +112,7 @@ function playFullScreenLaugh(kind) {
        }
        submitForm.reset();
        playFullScreenLaugh('submit');
-       setFeedback(true, 'AHAHA ! Une pépite de plus !',
-         typeof result.message === 'string' ? result.message : 'Votre histoire attend la modération avant publication.');
+       // Le grand fou rire plein écran suffit : aucune bannière ne décale le formulaire.
      } catch (error) {
        setFeedback(false, 'Le rire attendra un peu…',
          error && error.name === 'AbortError'
@@ -175,11 +174,8 @@ if (typeof document.querySelectorAll === 'function') {
           void panel.offsetWidth;
           panel.classList.add('reaction-bounce');
         }
-        feedback.textContent = result.added
-          ? (kind === 'laugh' ? '😂 Fou rire validé ! Le jury est par terre.' : '🙋 Bienvenue au club des refus lunaires !')
-          : 'Vous aviez déjà réagi à ce témoignage.';
-        feedback.classList.remove('error');
-        feedback.hidden = false;
+        // Le compteur et la scène plein écran constituent la confirmation.
+        // Ne pas afficher d'encart de succès qui déplacerait les boutons.
       } catch (error) {
         feedback.textContent = (error && error.message) || 'Impossible d’enregistrer la réaction. Réessayez.';
         feedback.classList.add('error');
