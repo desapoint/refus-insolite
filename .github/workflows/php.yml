@@ -31,5 +31,7 @@ jobs:
           coverage: none
       - name: Vérification syntaxique
         run: find . -name '*.php' -print -exec php -l {} \;
-      - name: Vérification MariaDB / migrations
+      - name: Vérification URL propres
+        run: php tests/routes.php
+      - name: Test migrations et PDO MariaDB
         run: php tests/smoke.php
