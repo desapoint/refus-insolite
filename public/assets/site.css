@@ -49,7 +49,7 @@
 .spark-a{top:16px;left:15%}.spark-b{right:17%;bottom:19px;background:#fc654b}.spark-c{top:10px;right:27%;background:#6dbda0}
 .laugh-stage.is-success .laugh-spark{opacity:1;animation:hooray .7s ease-out both}.laugh-stage.is-success .spark-b{animation-delay:.18s}.laugh-stage.is-success .spark-c{animation-delay:.35s}
 @media(max-width:700px){.laugh-stage{gap:15px;padding:12px}.laugh-face{font-size:53px}.laugh-bubbles{gap:5px}.laugh-bubbles span{font-size:11px}}
-@media(prefers-reduced-motion:reduce){.story-card:hover{transform:none}.paper-card:hover .stamp,.laugh-stage,.laugh-face,.laugh-bubbles span,.laugh-spark,.submit-feedback.error,.form-card:has(.laugh-stage.is-sending) #submitButton{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.story-card:hover{transform:none}.paper-card:hover .stamp,.submit-feedback.error{animation:none!important}}
 
 
 /* Réactions vivantes : deux choix clairs, touch targets confortables. */
@@ -136,3 +136,114 @@
 .hero-trust > span{min-height:36px;padding:7px 11px;border:1px solid #e2e6df;background:#fffdf9;border-radius:999px;white-space:nowrap;line-height:1.25;box-shadow:0 2px 7px #1b37340b}
 .hero-trust .small-icon{display:grid;place-items:center;flex:none;width:19px;height:19px;background:#e6f5ee;border:1px solid #b1d6c3;border-radius:50%;color:#2f7956;font-size:12px;line-height:1}
 @media(max-width:700px){.hero-trust{margin-top:24px;gap:8px}.hero-trust > span{font-size:11px;padding:6px 9px}}
+
+
+/* GRAND FOU RIRE : plein écran, SVG dessiné dans l'application, sans image ou bibliothèque externe.
+   Court, déclenché uniquement après une réponse réussie ; aucune option de désactivation. */
+.laugh-stage{
+  display:none;position:fixed;inset:0;width:100%;height:100%;z-index:1700;
+  min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;overflow:hidden;
+  align-items:center;justify-items:center;isolation:isolate;pointer-events:none;opacity:1;
+  -webkit-user-select:none;user-select:none
+}
+.laugh-stage.is-sending{display:none}
+.laugh-stage.is-success{display:grid;animation:full-laugh-in .24s both}
+.laugh-stage.is-success.is-leaving{animation:full-laugh-out .36s ease-in both}
+.laugh-backdrop{
+  position:absolute;inset:-2%;z-index:-2;
+  background:radial-gradient(ellipse at 48% 45%,#ffedb5 0%,#ffd179 32%,#fc8465 73%,#d94f63 105%);
+}
+.laugh-backdrop:after{
+  content:"";position:absolute;inset:0;opacity:.5;
+  background:repeating-conic-gradient(from -13deg at 50% 45%,rgba(255,255,255,.45) 0 7deg,transparent 7deg 21deg);
+  mask-image:radial-gradient(circle at center,transparent 0 17%,black 42%);
+}
+.laugh-stage[data-kind="relate"] .laugh-backdrop{
+  background:radial-gradient(ellipse at 50% 45%,#e9fff2 0%,#aee9d3 38%,#6cb7bd 78%,#287d91 110%);
+}
+.laugh-rings{position:absolute;inset:0;z-index:-1;display:grid;place-items:center}
+.laugh-rings i{position:absolute;width:min(66vmin,640px);aspect-ratio:1;border:5px solid rgba(255,255,255,.24);border-radius:50%;opacity:0}
+.laugh-stage.is-success .laugh-rings i{animation:laugh-ring 1.5s ease-out 2 both}
+.laugh-rings i:nth-child(2){animation-delay:.25s!important}
+.laugh-rings i:nth-child(3){animation-delay:.48s!important}
+.laugh-scene{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:min(96vw,760px);height:min(94dvh,810px);padding:3vh 20px;min-height:0;text-align:center}
+.laugh-character{width:min(48vh,420px,72vw);max-height:53dvh;overflow:visible;
+  filter:drop-shadow(0 12px 0 rgba(93,48,55,.19))}
+.laugh-figure{transform-box:fill-box;transform-origin:50% 100%}
+.laugh-head{transform-box:fill-box;transform-origin:50% 78%}
+.laugh-mouth{transform-box:fill-box;transform-origin:center 0}
+.laugh-arm-left,.laugh-arm-right{transform-box:fill-box;transform-origin:50% 13%}
+.laugh-tear{transform-box:fill-box;transform-origin:center top}
+.laugh-shine{transform-box:fill-box;transform-origin:center}
+.laugh-stage.is-success .laugh-figure{animation:full-belly-laugh .43s ease-in-out 7 both}
+.laugh-stage.is-success .laugh-head{animation:full-head-laugh .42s ease-in-out 7 both}
+.laugh-stage.is-success .laugh-mouth{animation:full-mouth-laugh .31s ease-in-out 9 both}
+.laugh-stage.is-success .laugh-arm-left{animation:full-arm-left .43s ease-in-out 7 both}
+.laugh-stage.is-success .laugh-arm-right{animation:full-arm-right .43s ease-in-out 7 both}
+.laugh-stage.is-success .laugh-tear-left{animation:full-tear-left .78s ease-out .22s 3 both}
+.laugh-stage.is-success .laugh-tear-right{animation:full-tear-right .81s ease-out .38s 3 both}
+.laugh-stage.is-success .laugh-shine{animation:full-shine .65s ease-in-out 4 both}
+.laugh-stage.is-success .laugh-shine-second{animation-delay:.3s}
+.laugh-comic-words{position:absolute;inset:0;pointer-events:none}
+.laugh-word{position:absolute;z-index:5;display:block;color:#fffdf1;font-family:system-ui,-apple-system,sans-serif;
+  font-size:clamp(28px,5.1vw,67px);line-height:1;font-weight:1000;font-style:italic;letter-spacing:-.075em;
+  white-space:nowrap;opacity:0;text-shadow:4px 5px 0 #243947,-2px -2px 0 #243947,2px -2px 0 #243947,-2px 2px 0 #243947;
+  -webkit-text-stroke:2px #243947;transform-origin:center}
+.laugh-word:nth-child(1){top:12%;left:4%;--turn:-15deg}
+.laugh-word:nth-child(2){top:20%;right:0;--turn:12deg}
+.laugh-word:nth-child(3){bottom:28%;left:-1%;--turn:-6deg}
+.laugh-stage.is-success .laugh-word{animation:full-ha-burst .86s cubic-bezier(.22,1.5,.43,1) both}
+.laugh-stage.is-success .laugh-word:nth-child(1){animation-delay:.1s}
+.laugh-stage.is-success .laugh-word:nth-child(2){animation-delay:.4s}
+.laugh-stage.is-success .laugh-word:nth-child(3){animation-delay:.75s}
+.laugh-caption{font-size:clamp(24px,5.7vw,48px);font-weight:1000;line-height:1.08;letter-spacing:-.05em;
+  color:#fff;max-width:95%;text-shadow:0 4px 0 #263b44,0 8px 20px #4a343660;margin-top:-1vh}
+.laugh-subcaption{margin:12px 0 0;max-width:90%;font-size:clamp(12px,2.2vw,18px);
+  font-weight:750;color:#293d42;line-height:1.4;padding:8px 17px;border-radius:999px;background:#fff8ea;
+  box-shadow:0 5px 0 rgba(32,55,62,.15)}
+.laugh-stage.is-success .laugh-caption{animation:full-caption-pop .5s cubic-bezier(.2,1.5,.3,1) .46s both}
+.laugh-stage.is-success .laugh-subcaption{animation:full-caption-pop .44s cubic-bezier(.2,1.4,.3,1) .72s both}
+.laugh-confetti{position:absolute;inset:0;z-index:4;pointer-events:none}
+.laugh-confetti i{position:absolute;left:50%;top:45%;width:12px;height:19px;background:#ffffff;border-radius:3px;opacity:0}
+.laugh-confetti i:nth-child(3n){background:#55d9cd;border-radius:50%}
+.laugh-confetti i:nth-child(3n+1){background:#ff5687}
+.laugh-confetti i:nth-child(4n){background:#ffe258}
+.laugh-confetti i:nth-child(1){--dx:-42vw;--dy:-27vh;--spin:430deg;--delay:.13s}
+.laugh-confetti i:nth-child(2){--dx:39vw;--dy:-33vh;--spin:-470deg;--delay:.28s}
+.laugh-confetti i:nth-child(3){--dx:-30vw;--dy:30vh;--spin:-380deg;--delay:.23s}
+.laugh-confetti i:nth-child(4){--dx:36vw;--dy:27vh;--spin:410deg;--delay:.33s}
+.laugh-confetti i:nth-child(5){--dx:-18vw;--dy:-42vh;--spin:300deg;--delay:.12s}
+.laugh-confetti i:nth-child(6){--dx:20vw;--dy:-41vh;--spin:-350deg;--delay:.29s}
+.laugh-confetti i:nth-child(7){--dx:-46vw;--dy:9vh;--spin:530deg;--delay:.46s}
+.laugh-confetti i:nth-child(8){--dx:46vw;--dy:9vh;--spin:-520deg;--delay:.35s}
+.laugh-confetti i:nth-child(9){--dx:-11vw;--dy:42vh;--spin:-280deg;--delay:.48s}
+.laugh-confetti i:nth-child(10){--dx:13vw;--dy:43vh;--spin:350deg;--delay:.42s}
+.laugh-confetti i:nth-child(11){--dx:-34vw;--dy:-13vh;--spin:460deg;--delay:.53s}
+.laugh-confetti i:nth-child(12){--dx:33vw;--dy:15vh;--spin:-490deg;--delay:.19s}
+.laugh-stage.is-success .laugh-confetti i{animation:full-confetti-flight 1.35s cubic-bezier(.2,.7,.5,1) var(--delay) 2 both}
+@keyframes full-laugh-in{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:scale(1)}}
+@keyframes full-laugh-out{from{opacity:1}to{opacity:0}}
+@keyframes full-belly-laugh{0%,100%{transform:translateY(2px) rotate(0)}25%{transform:translateY(-13px) rotate(-5deg)}55%{transform:translateY(12px) rotate(5deg)}80%{transform:translateY(-7px) rotate(-2deg)}}
+@keyframes full-head-laugh{0%,100%{transform:rotate(0deg) translateY(0)}30%{transform:rotate(-8deg) translateY(-5px)}65%{transform:rotate(10deg) translateY(3px)}}
+@keyframes full-mouth-laugh{0%,100%{transform:scaleY(.76)}40%{transform:scaleY(1.08)}75%{transform:scaleY(.88)}}
+@keyframes full-arm-left{0%,100%{transform:rotate(0)}50%{transform:rotate(21deg)}}
+@keyframes full-arm-right{0%,100%{transform:rotate(0)}50%{transform:rotate(-24deg)}}
+@keyframes full-tear-left{0%{opacity:0;transform:translate(0,0) scale(.7)}20%{opacity:1}100%{opacity:0;transform:translate(-24px,52px) scale(.85)}}
+@keyframes full-tear-right{0%{opacity:0;transform:translate(0,0) scale(.7)}20%{opacity:1}100%{opacity:0;transform:translate(29px,49px) scale(.85)}}
+@keyframes full-shine{0%,100%{opacity:.3;transform:rotate(-15deg) scale(.65)}50%{opacity:1;transform:rotate(20deg) scale(1.12)}}
+@keyframes full-ha-burst{0%{opacity:0;transform:translateY(45px) rotate(var(--turn)) scale(.1)}45%{opacity:1;transform:translateY(-14px) rotate(var(--turn)) scale(1.2)}75%{opacity:1;transform:translateY(-3px) rotate(var(--turn)) scale(1)}100%{opacity:0;transform:translateY(-32px) rotate(var(--turn)) scale(1.13)}}
+@keyframes full-ring{from{opacity:0;transform:scale(.3)}35%{opacity:.55}to{opacity:0;transform:scale(2.4)}}
+@keyframes laugh-ring{from{opacity:0;transform:scale(.3)}35%{opacity:.55}to{opacity:0;transform:scale(2.4)}}
+@keyframes full-caption-pop{from{opacity:0;transform:translateY(22px) scale(.78)}70%{opacity:1;transform:translateY(-5px) scale(1.05)}to{opacity:1;transform:none}}
+@keyframes full-confetti-flight{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.3)}20%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--spin)) scale(.8)}}
+@media(max-width:540px){
+  .laugh-character{width:min(72vw,310px);max-height:46dvh}
+  .laugh-scene{height:94dvh;padding:4vh 8px}
+  .laugh-word:nth-child(1){top:16%;left:2%}
+  .laugh-word:nth-child(2){top:22%;right:0}
+  .laugh-word:nth-child(3){bottom:27%;left:0}
+  .laugh-caption{font-size:clamp(27px,7vw,39px)}
+  .laugh-subcaption{font-size:12px;padding:8px 10px}
+}
+/* Cette animation ne possède pas d'interrupteur et reste animée après un clic. */
