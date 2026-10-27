@@ -61,6 +61,25 @@ for kind in relate relate laugh laugh; do
 done
 php -r 'require "src/app.php";$c=require "../private/refus-insolite.php";$db=db_open($c);$s=$db->prepare("SELECT likes_count,laughs_count FROM refus WHERE id=?");$s->execute([$argv[1]]);$r=$s->fetch();if((int)$r["likes_count"]!==1||(int)$r["laughs_count"]!==1)exit(1);' "$story_id"
 
+# Les visiteurs restent limités à 3 soumissions par heure.
+# La première a été envoyée plus haut : deux succès de plus, puis 429.
+post_sample_story() {
+  "${base[@]}" -o "$reply" -w '%{http_code}' -X POST \
+    --data-urlencode "csrf=$token" -d 'action=submit' \
+    --data-urlencode 'title=La photocopieuse a encore gagné' \
+    --data-urlencode 'quote_text=Votre enthousiasme est trop puissant pour notre petite équipe administrative actuelle.' \
+    --data-urlencode 'context_text=Après plusieurs entretiens sérieux une réponse inattendue est arrivée dans ma boîte.' \
+    -d 'category=absurde' -d 'sector=services' -d 'consent=yes' \
+    http://127.0.0.1:18083/soumettre
+}
+for _ in 1 2; do
+  status="$(post_sample_story)"
+  test "$status" = '201'
+done
+status="$(post_sample_story)"
+test "$status" = '429'
+php -r '$j=json_decode(file_get_contents($argv[1]),true);if(!is_array($j)||$j["ok"]!==false)exit(1);' "$reply"
+
 # Suppression strictement réservée à l'administrateur, avec validation explicite.
 status="$("${base[@]}" -o "$reply" -w '%{http_code}' -X POST --data-urlencode "csrf=$token" \
   -d 'action=delete_story' -d "id=$story_id" -d 'confirmation=SUPPRIMER' http://127.0.0.1:18083/moderation)"
@@ -69,6 +88,12 @@ status="$(curl -s -b "$cookies" -c "$cookies" -o "$reply" -w '%{http_code}' \
   -X POST --data-urlencode "csrf=$token" -d 'action=login' \
   --data-urlencode 'password=Mot-de-passe-test-uniquement' http://127.0.0.1:18083/moderation)"
 test "$status" = '303'
+# Sur la même session et la même adresse IP, l'administrateur n'a aucune limite horaire.
+for _ in 1 2 3 4 5; do
+  status="$(post_sample_story)"
+  test "$status" = '201'
+  php -r '$j=json_decode(file_get_contents($argv[1]),true);if(!is_array($j)||$j["ok"]!==true)exit(1);' "$reply"
+done
 curl -s -b "$cookies" "http://127.0.0.1:18083/moderation?statut=approved" > "$reply"
 grep -q "Supprimer définitivement" "$reply"
 status="$(curl -s -b "$cookies" -c "$cookies" -o "$reply" -w '%{http_code}' \
@@ -76,5 +101,11 @@ status="$(curl -s -b "$cookies" -c "$cookies" -o "$reply" -w '%{http_code}' \
   -d 'confirmation=SUPPRIMER' http://127.0.0.1:18083/moderation)"
 test "$status" = '303'
 php -r 'require "src/app.php";$c=require "../private/refus-insolite.php";$db=db_open($c);$s=$db->prepare("SELECT COUNT(*) FROM refus WHERE id=?");$s->execute([$argv[1]]);if((int)$s->fetchColumn()!==0)exit(1);' "$story_id"
-echo 'Tests HTTP AJAX, réactions et suppression : OK'
+# En quittant la modération, les limites anonymes doivent s'appliquer immédiatement à nouveau.
+status="$(curl -s -b "$cookies" -c "$cookies" -o "$reply" -w '%{http_code}' \
+  -X POST --data-urlencode "csrf=$token" -d 'action=logout' http://127.0.0.1:18083/moderation)"
+test "$status" = '303'
+status="$(post_sample_story)"
+test "$status" = '429'
+echo 'Tests HTTP AJAX, réactions, suppression et limite admin : OK'
 
