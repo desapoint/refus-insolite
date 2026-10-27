@@ -1,0 +1,35 @@
+name: Validation PHP 8.3 et MariaDB
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.4
+        env:
+          MARIADB_ROOT_PASSWORD: ephemeral_root_test_only
+          MARIADB_DATABASE: refus_insolite
+          MARIADB_USER: refus_site
+          MARIADB_PASSWORD: test_mariadb_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "healthcheck.sh --connect --innodb_initialized"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo_mysql, mbstring
+          coverage: none
+      - name: Vérification syntaxique
+        run: find . -name '*.php' -print -exec php -l {} \;
+      - name: Vérification MariaDB / migrations
+        run: php tests/smoke.php
