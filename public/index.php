@@ -183,7 +183,7 @@ function story_card(array $s): void {
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f8f7f2"><meta name="description" content="Refus Insolites : partagez et découvrez anonymement les refus de candidature les plus étonnants.">
   <title><?= e($displayName) ?> — Refus Insolites</title>
-  <link rel="stylesheet" href="assets/site.css"><script src="assets/site.js" defer></script>
+  <link rel="stylesheet" href="/assets/site.css"><script src="/assets/site.js" defer></script>
 </head>
 <body>
 <div class="utility"><i></i> TÉMOIGNAGES ANONYMISÉS · MODÉRATION AVANT PUBLICATION</div>
@@ -217,7 +217,7 @@ function story_card(array $s): void {
 </section>
 <?php elseif ($page === 'explorer'): ?>
 <section class="page"><div class="container"><div class="page-title"><span class="eyebrow">La collection</span><h1 class="serif">Le catalogue des <span class="coral">non.</span></h1><p>Découvrez les anecdotes anonymisées sélectionnées par la modération.</p></div>
-<form class="filters" action="index.php" method="get" role="search"><input type="hidden" name="p" value="explorer">
+<form class="filters" action="/explorer" method="get" role="search">
   <div class="field"><label for="search">Rechercher</label><input id="search" name="q" class="control search" type="search" value="<?= e($filters['q']) ?>" maxlength="100" placeholder="Ex. expérience, salaire…"></div>
   <div class="field"><label for="category">Catégorie</label><select id="category" name="category" class="control"><option value="all">Toutes</option><?php foreach(CATEGORIES as $k=>$v): ?><option value="<?= e($k) ?>" <?= $filters['category']===$k ? 'selected':'' ?>><?= e($v) ?></option><?php endforeach ?></select></div>
   <div class="field"><label for="sector">Secteur</label><select id="sector" name="sector" class="control"><option value="all">Tous</option><?php foreach(SECTORS as $k=>$v): ?><option value="<?= e($k) ?>" <?= $filters['sector']===$k ? 'selected':'' ?>><?= e($v) ?></option><?php endforeach ?></select></div>
@@ -255,7 +255,7 @@ function story_card(array $s): void {
 <section class="page"><div class="container page-title"><span class="eyebrow">Merci !</span><h1 class="serif">Témoignage reçu.</h1><p>Votre histoire a été soumise à la modération. Elle n’apparaîtra dans la collection qu’après validation.</p><a class="btn btn-primary" href="<?= e(link_to('explorer')) ?>">Explorer les refus →</a></div></section>
 <?php elseif ($page === 'moderation'): ?>
 <section class="page"><div class="container"><div class="page-title"><span class="eyebrow">Espace administrateur</span><h1 class="serif">File de <span class="coral">modération.</span></h1><p>Gestion des témoignages en attente et des signalements.</p></div>
-<?php if (!admin_logged()): ?><div class="form-card admin-login"><h2>Connexion administrateur</h2><?php if (!admin_ready($config)): ?><p class="site-alert">Configurez <code>admin_password_hash</code> dans <code>config/config.php</code> pour activer la modération.</p><?php endif ?><form method="post" action="<?= e(link_to('moderation')) ?>"><?= csrf_field() ?><input name="action" type="hidden" value="login"><div class="field"><label for="adminPassword">Mot de passe</label><input class="control" type="password" id="adminPassword" name="password" autocomplete="current-password" required></div><button class="btn btn-primary" type="submit">Se connecter</button></form></div>
+<?php if (!admin_logged()): ?><div class="form-card admin-login"><h2>Connexion administrateur</h2><?php if (!admin_ready($config)): ?><p class="site-alert">Configurez <code>admin_password_hash</code> dans <code>private/refus-insolite.php</code> pour activer la modération.</p><?php endif ?><form method="post" action="<?= e(link_to('moderation')) ?>"><?= csrf_field() ?><input name="action" type="hidden" value="login"><div class="field"><label for="adminPassword">Mot de passe</label><input class="control" type="password" id="adminPassword" name="password" autocomplete="current-password" required></div><button class="btn btn-primary" type="submit">Se connecter</button></form></div>
 <?php else: ?>
 <div class="admin-grid"><div class="stat"><strong><?= $stats['pending'] ?? 0 ?></strong><span>En attente</span></div><div class="stat"><strong><?= $stats['approved'] ?? 0 ?></strong><span>Approuvés</span></div><div class="stat"><strong><?= $stats['rejected'] ?? 0 ?></strong><span>Rejetés</span></div><div class="stat"><strong><?= count($reports) ?></strong><span>Signalements affichés</span></div></div>
 <div class="result-head"><strong>Témoignages en attente (100 maximum affichés)</strong><form method="post" action="<?= e(link_to('moderation')) ?>"><?= csrf_field() ?><input type="hidden" name="action" value="logout"><button class="btn btn-soft btn-small" type="submit">Se déconnecter</button></form></div>
