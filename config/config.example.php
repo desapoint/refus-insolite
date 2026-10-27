@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-// Copier en config/config.php (IGNORÉ PAR GIT), puis adapter les valeurs.
-// Le document root doit viser le dossier public/, pas la racine du projet.
+// Copier dans /home/USER/web/DOMAINE/private/refus-insolite.php (hors depot).
+// Le depot complet est copie directement dans /home/USER/web/DOMAINE/public_html/.
 return [
     'app' => [
         'name' => 'Refus Insolites',
