@@ -20,8 +20,8 @@ $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 $db = db_open($cfg);
 migrate($db, $cfg['database']['name']);
 migrate($db, $cfg['database']['name']);
-ensure((int)$db->query('SELECT COUNT(*) FROM schema_migrations')->fetchColumn() === 1, 'migration appliquée une seule fois');
-foreach (['refus', 'reactions', 'rate_limits', 'reports'] as $table) {
+ensure((int)$db->query('SELECT COUNT(*) FROM schema_migrations')->fetchColumn() === 2, 'deux migrations appliquées une seule fois');
+foreach (['refus', 'reactions', 'laugh_reactions', 'rate_limits', 'reports'] as $table) {
     ensure((int)$db->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = " . $db->quote($table))->fetchColumn() === 1, 'table ' . $table);
 }
 $story = validated_story([
@@ -49,10 +49,19 @@ $approve = $db->prepare("UPDATE refus SET status='approved', reviewed_at=UTC_TIM
 $approve->execute([$id]);
 [$list, $total] = query_stories($db, ['category'=>'absurde', 'sector'=>'tech', 'sort'=>'popular', 'q'=>'incroyable'], 1);
 ensure($total === 1 && (int)$list[0]['id'] === $id, 'filtrage des publications approuvées');
-$db->prepare('INSERT INTO reactions (refus_id, visitor_hash) VALUES (?,?)')->execute([$id, str_repeat('b', 64)]);
+$relate = record_reaction($db, $id, str_repeat('b', 64), 'relate');
+ensure($relate['added'] && $relate['likes_count'] === 1 && $relate['laughs_count'] === 0, 'réaction moi aussi');
+$duplicate = record_reaction($db, $id, str_repeat('b', 64), 'relate');
+ensure(!$duplicate['added'] && $duplicate['likes_count'] === 1, 'pas de vote doublon');
+$laugh = record_reaction($db, $id, str_repeat('b', 64), 'laugh');
+ensure($laugh['added'] && $laugh['likes_count'] === 1 && $laugh['laughs_count'] === 1, 'rire distinct pour le même visiteur');
+$doubleLaugh = record_reaction($db, $id, str_repeat('b', 64), 'laugh');
+ensure(!$doubleLaugh['added'] && $doubleLaugh['laughs_count'] === 1, 'rire unique');
+
 $db->prepare('INSERT INTO reports (refus_id, reason) VALUES (?,?)')->execute([$id, 'privacy']);
 ensure((int)$db->query('SELECT COUNT(*) FROM reports')->fetchColumn() === 1, 'signalement');
 $db->prepare('DELETE FROM refus WHERE id=?')->execute([$id]);
 ensure((int)$db->query('SELECT COUNT(*) FROM reports')->fetchColumn() === 0, 'cascade signalements');
 ensure((int)$db->query('SELECT COUNT(*) FROM reactions')->fetchColumn() === 0, 'cascade réactions');
+ensure((int)$db->query('SELECT COUNT(*) FROM laugh_reactions')->fetchColumn() === 0, 'cascade rires');
 echo "Tests PDO / MariaDB : OK\n";
